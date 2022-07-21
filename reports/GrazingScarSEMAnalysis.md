@@ -3,6 +3,7 @@ Grazing Scar SEM Analysis
 Lillian Aoki
 2022-07-19
 
+-   <a href="#tldr" id="toc-tldr">TL;DR</a>
 -   <a href="#background-and-sem-development"
     id="toc-background-and-sem-development">Background and SEM
     development</a>
@@ -47,6 +48,31 @@ This document walks through the analysis of grazing scars and eelgrass
 wasting disease. The analysis is in-progress, and this doc will be most
 useful for sharing and receiving feedback at the seagrass team meeting
 July 21.
+
+## TL;DR
+
+Take-away points before wading into detail:
+
+-   SEM analysis suggests that the correlation between direct disease
+    metrics (Prevalence and Lesion Area) with Grazing Scars exists and
+    the path runs from Disease (Prevalence or Lesion Area) to Grazing.
+    This could indicate an indirect effect of warm temperature anomalies
+    on grazing pressure, and/or various other mechanisms, such as
+    reduced plant defenses to grazing when diseased, epifauna preference
+    for diseased tissue, possible microbiome effect?  
+-   However, for Severity (a relative assessment of disease), the path
+    runs from Grazing to Severity. This might indicate that plants
+    receiving lots of grazing have fewer resources for defense against
+    infection? Or, more grazers act as vectors, leading to multiple
+    points of infection, and therefore greater severity? Hard to say.  
+-   The current SEM network isn’t very well connected - there are
+    relatively few important paths connecting temperature, seagrass,
+    grazing, and disease. Although the model fits the data well, it
+    feels like we might be missing some pathways. At the bottom of this
+    document, I suggest a possible alternative SEM to work with that
+    involves more pathways - possibly worth exploring?  
+-   This analysis is done on 2019 data only. A major next step is to
+    analyze 2021 data and to try a 3-y model for the Washington sites.
 
 ## Background and SEM development
 
