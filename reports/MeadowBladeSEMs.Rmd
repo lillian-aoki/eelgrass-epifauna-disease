@@ -1,0 +1,391 @@
+---
+title: "Blade-level SEMs with meadow-scale predictors"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("R/helpers.R")
+source("R/coefs.R")
+# library(nlme)
+library(lme4)
+library(dplyr)
+library(readr)
+library(DHARMa)
+library(ggplot2)
+library(GGally)
+library(optimx)
+library(performance)
+
+# load CRAN version of pSEM - 2.1.0
+library(piecewiseSEM)
+library(visreg)
+library(multcompView)
+
+```
+
+SEMs to assess temperature, grazing, disease relationships. All data (2019 and 2021) from sites where available.  
+
+SEMs are set up with meadow-scale predictors (e.g. epifauna abundance, canopy height) and modeled at the blade scale for prevalence, grazing scars, and blade area.  
+
+Some relationships have been eliminated through the LMM/GLMM modeling (e.g. epifauna does not predict grazing)
+
+Different SEMs compared to answer specific questions:  
+- does temperature afffect prevalence (disease) directly or indirectly?  
+- is temperature a driver of the relationship between grazing and prevalence?  
+- does grazing drive disease or does disease drive grazing (i.e. increased grazing increases disease versus diseaed plants accumulating more grazing scars)
+
+```{r data}
+# data ###
+dis <- read_csv("data/meadow_predictors_blade_SEM_data.csv")
+dis$BladeAreaLog <- log10(dis$BladeArea)
+dis$BladeArea_cm2 <- dis$BladeArea/100
+dis$fTransect <- as.factor(dis$Transect)
+dis$sLatitude <- scale(dis$Latitude)
+site <- select(dis, c(Epifauna, CanopyHeight, DensityLog, TempAnomWarm_May, Latitude, sLatitude,
+                      TempAnomWarm_April, TempAnomWarm_June, MonthlyMeanTemp_June, YearBinary, Meadow, Region))
+site <- distinct(site)
+```
+
+## Prevalence SEMs 
+
+#### full model
+```{r prev1}
+sem1 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis),
+  glmer(Prevalence ~ GrazingScars+ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem1)
+coefs(sem1)
+```
+
+This full model fits the data well (Fisher C p-valueu = 0.669). Direct temperature effects on prevalence are not significant. AIC is 117.8
+
+### alternative model: no temp effects on prev
+```{r prev2}
+sem2 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis),
+  glmer(Prevalence ~ GrazingScars+ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem2)
+```
+This model fits the data well. Global fit test p=0.589. AIC=118.3. No missing paths from d-sep. So, little evidence for direct temperature effects on prevalence.  
+
+Was going to test each temperature effect separately, but I don't think it's necessary since the paths are not significnat in d-sep above. Skip next two alternative models. 
+
+### alternative model: June Mean only effect on prev
+```{r prev3}
+# sem3 <- psem(
+#   lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog 
+#        + YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+#           BladeAreaLog +  
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=dis,
+#         family = "binomial"),
+#   lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+#          TempAnomWarm_June + MonthlyMeanTemp_June +
+#          TidalHeightBinary + YearBinary +
+#          (1|Region) + (1|Meadow),
+#        data=dis),
+#   glmer(Prevalence ~ GrazingScars+ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+#           MonthlyMeanTemp_June +
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=dis,
+#         family = "binomial"),
+#   DensityLog%~~%CanopyHeight
+# )
+# summary(sem3)
+```
+
+### alternative model: June Anom only effect on prev
+```{r prev4}
+# sem4 <- psem(
+#   lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog 
+#        + YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+#           BladeAreaLog +  
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=dis,
+#         family = "binomial"),
+#   lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+#          TempAnomWarm_June + MonthlyMeanTemp_June +
+#          TidalHeightBinary + YearBinary +
+#          (1|Region) + (1|Meadow),
+#        data=dis),
+#   glmer(Prevalence ~ GrazingScars+ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=dis,
+#         family = "binomial"),
+#   DensityLog%~~%CanopyHeight
+# )
+# summary(sem4)
+```
+
+
+### alternative model: reverse gz-prev direction
+```{r prev5}
+sem5 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  Prevalence + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis),
+  glmer(Prevalence ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem5)
+coefs(sem5)
+```
+AIC is 119.3 (slightly higher than for opposite direction). Passes global fit test (p=0.501). Not immediately clear if this direction is better...  look at coefs in rendered version.  
+
+
+### alternative model: no temperature effects on gz
+
+```{r prev6}
+sem6 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis),
+  glmer(Prevalence ~ GrazingScars+ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem6)
+```
+
+Fails global fit (p=0) therefor need the temperature effects on grazing. 
+
+Based on this, I don't think we need the below either 
+### alternative model: remove temp paths to gz and prev
+```{r prev7}
+# sem7 <- psem(
+#   lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog 
+#        + YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=dis),
+#   glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+#           BladeAreaLog +  
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=dis,
+#         family = "binomial"),
+#   lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+#          TempAnomWarm_June + MonthlyMeanTemp_June +
+#          TidalHeightBinary + YearBinary +
+#          (1|Region) + (1|Meadow),
+#        data=dis),
+#   glmer(Prevalence ~ GrazingScars+ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=dis,
+#         family = "binomial"),
+#   DensityLog%~~%CanopyHeight
+# )
+# summary(sem7)
+```
+
+### alternative model: prev and gz are correlated errors (missing driver)
+```{r prev8}
+sem8 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis),
+  glmer(Prevalence ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight,
+  Prevalence%~~%GrazingScars
+)
+summary(sem8)
+coefs(sem8)
+```
+
+Passes global fit (p=0.669), AIC=115.8, which is 2 lower than for other SEM with grazing driving prevalence. Need to look at coefs in rendered version but seems like prevalence and grazing could both be responding to another driver. Could be environmental (salinity?) Or could be something simple like proportion lacunae or other grazer species...  
+
+```{r}
+df.AIC <- data.frame(model=c("prev1", "prev2", "prev5", "prev8", "prev6"),
+                     AIC=c(117.810, 118.310, 119.337, 115.810, 360.176))
+df.AIC$deltaAIC <- df.AIC$AIC-min(df.AIC$AIC)
+df.AIC$likelihood <- exp(-df.AIC$deltaAIC/2)
+df.AIC$weight <- df.AIC$likelihood/sum(df.AIC$likelihood)
+tibble(df.AIC)
+```
+
+
+
+This is tough. Not very straight forward.  
+- Temperature does NOT directly influence prevalence  
+- Grazing and prevalence are related  
+- Possibly an alternative covariate is affecting both grazing scar presence and prevalence

@@ -167,20 +167,23 @@ Although this model passes the global goodness of fit test, the dSep test indica
 #### alternative model -  remove the path from grazing to prevalence
 
 ```{r prev_sem3}
-# egwd.sem3 <- psem(
-#   lme(fixed = StructureLog ~ TempAnomWarm_March + TidalHeightBinary + TransectBeginDecimalLatitude,
-#       random = c(~1|Meadow),
-#       data=egwd1),
-#   glmer(PrevalenceMean ~ TempAnomWarm_June + TidalHeightBinary + TransectBeginDecimalLatitude + (1|Meadow),
-#         family="binomial",
-#         data=egwd1,
-#         weights=CountBlades),
-#   glmer(GrazingScarsMeanTransect ~ TempAnomWarm_June + TidalHeightBinary + StructureLog + TransectBeginDecimalLatitude + (1|Meadow),
-#         family="binomial",
-#         data=egwd1,
-#         weights=CountScars)
-#   )
-# summary(egwd.sem3, conserve=TRUE)
+egwd.sem3 <- psem(
+  # lmer(StructureLog ~ TempAnomWarm_March + TidalHeightBinary + TransectBeginDecimalLatitude +(1|Meadow),
+  #      data=egwd1),
+  lme(fixed = StructureLog ~ TempAnomWarm_March + TidalHeightBinary + TransectBeginDecimalLatitude,
+      random = c(~1|Meadow),
+      data=egwd1),
+  glmer(PrevalenceMean ~ TempAnomWarm_June + TidalHeightBinary + TransectBeginDecimalLatitude + (1|Meadow),
+        family="binomial",
+        data=egwd1,
+        weights=CountBlades),
+  glmer(GrazingScarsMeanTransect ~ TempAnomWarm_June + TidalHeightBinary + StructureLog + TransectBeginDecimalLatitude + (1|Meadow),
+        family="binomial",
+        data=egwd1,
+        weights=CountScars),
+  data=egwd1
+  )
+summary(egwd.sem3, conserve=TRUE)
 # note, sometimes I get an error running this, and I have no idea why. The error says no applicable method for 'family' applied to object of class "lme" but this is demonstrably false... can't quite figure out how to fix this from package documentation
 ```
 
@@ -224,7 +227,7 @@ egwd.sem5 <- psem(
         weights = CountScars)
 )
 
-# summary(egwd.sem5, conserve = TRUE)
+summary(egwd.sem5, conserve = TRUE)
 # same error as above for sem3 but sometimes it runs...
 ```
 This model passes global goodness of fit and has no missing paths (dSep). AIC is equivalent to the initial model (40.1 vs 39.2), because the only difference is the direction of the path. To better compare these two alternative models, we can look at the coefficients. Need to standardize to get the relative strength of each path. 

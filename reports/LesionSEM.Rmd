@@ -1,0 +1,341 @@
+---
+title: "Blade-level SEMs with meadow-scale predictors"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("R/helpers.R")
+source("R/coefs.R")
+# library(nlme)
+library(lme4)
+library(dplyr)
+library(readr)
+library(DHARMa)
+library(ggplot2)
+library(GGally)
+library(optimx)
+library(performance)
+
+# load CRAN version of pSEM - 2.1.0
+library(piecewiseSEM)
+library(visreg)
+library(multcompView)
+
+```
+
+SEMs to assess temperature, grazing, disease relationships. All data (2019 and 2021) from sites where available.  
+
+SEMs are set up with meadow-scale predictors (e.g. epifauna abundance, canopy height) and modeled at the blade scale for lesion area, grazing scars, and blade area.  
+
+Some relationships have been eliminated through the LMM/GLMM modeling (e.g. epifauna does not predict grazing)
+
+Note, remove tidal height because it gets messy (missing "path" from tidal height to canopy, density even though they are measured at site level)
+
+Different SEMs compared to answer specific questions:  
+- does temperature afffect lesion area directly or indirectly?  
+- does epifauna abundance or grazing influence lesion area directly? 
+- does grazing drive disease or does disease drive grazing (i.e. increased grazing increases disease versus diseaed plants accumulating more grazing scars)
+
+```{r data}
+# data ###
+dis <- read_csv("data/meadow_predictors_blade_SEM_data.csv")
+dis$BladeAreaLog <- log10(dis$BladeArea)
+dis$BladeArea_cm2 <- dis$BladeArea/100
+dis$fTransect <- as.factor(dis$Transect)
+dis$sLatitude <- scale(dis$Latitude)
+site <- select(dis, c(Epifauna, CanopyHeight, DensityLog, TempAnomWarm_May, Latitude, sLatitude,
+                      TempAnomWarm_April, TempAnomWarm_June, MonthlyMeanTemp_June, YearBinary, Meadow, Region))
+site <- distinct(site)
+dis2 <- subset(dis, LesionArea>0)
+dis2$LesionAreaLog <- log10(dis2$LesionArea)
+```
+
+## Lesion Area models
+
+#### full model
+```{r}
+les1 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+lmer(LesionAreaLog ~ GrazingScars + BladeAreaLog + Epifauna + DensityLog + CanopyHeight + 
+               TempAnomWarm_June + MonthlyMeanTemp_June +
+                YearBinary + (1|Meadow) + (1|Region),
+             data=dis2),
+  DensityLog%~~%CanopyHeight
+)
+summary(les1)
+coefs(les1)
+```
+
+Passes global fit (p=0.68), AIC = 108.898 Lesion area has grazing and epifauna links, no temp effect significant
+
+#### alternative model - no temp to lesion
+```{r }
+les2 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+          YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+lmer(LesionAreaLog ~ GrazingScars + BladeAreaLog + Epifauna + DensityLog + CanopyHeight + 
+                YearBinary + (1|Meadow) + (1|Region),
+             data=dis2),
+  DensityLog%~~%CanopyHeight
+)
+summary(les2)
+# coefs(les2)
+```
+
+Does not pass global fit test (p = 0.02). AIC = 119.006. D-sep shows temp effects on lesion area are missing and significant.
+
+#### alternative model - no temp to grazing
+```{r}
+les3 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+           YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+          YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+lmer(LesionAreaLog ~ GrazingScars + BladeAreaLog + Epifauna + DensityLog + CanopyHeight + 
+       TempAnomWarm_June + MonthlyMeanTemp_June +
+                YearBinary + (1|Meadow) + (1|Region),
+             data=dis2),
+  DensityLog%~~%CanopyHeight
+)
+summary(les3)
+# coefs(les3)
+```
+
+Doesn't pass global test (p=0), AIC = 192.544. Temp effects on grazing scars are missing
+
+#### alternative model - no grazing to lesion
+```{r les4}
+les4 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary +  
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+          YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+lmer(LesionAreaLog ~ BladeAreaLog + Epifauna + DensityLog + CanopyHeight + 
+               TempAnomWarm_June + MonthlyMeanTemp_June +
+                YearBinary + (1|Meadow) + (1|Region),
+             data=dis2),
+  DensityLog%~~%CanopyHeight
+)
+summary(les4)
+```
+
+Doesn't pass (p=0.02), AIC= 117.449, d-sep shows need for grazing to lesion
+
+#### alternative model - no epifauna to lesion
+```{r les5}
+les5 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary +  
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+           YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+lmer(LesionAreaLog ~ GrazingScars + BladeAreaLog + DensityLog + CanopyHeight + 
+               TempAnomWarm_June + MonthlyMeanTemp_June +
+               YearBinary + (1|Meadow) + (1|Region),
+             data=dis2),
+  DensityLog%~~%CanopyHeight
+)
+summary(les5)
+```
+
+Fails global fit test (p=0.002), AIC = 123.318 D-sep  indicates need for epifauna to lesion area  
+
+#### alternative model - reverse direction from lesion to grazing
+
+```{r les6}
+les6 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary +  
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  LesionAreaLog +
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+           YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+lmer(LesionAreaLog ~  BladeAreaLog + Epifauna + DensityLog + CanopyHeight + 
+               TempAnomWarm_June + MonthlyMeanTemp_June +
+                YearBinary + (1|Meadow) + (1|Region),
+             data=dis2),
+  DensityLog%~~%CanopyHeight
+)
+summary(les6)
+```
+
+Passes global fit (p=0.478). AIC = 109.475 (slightly higher than for the original model)
+
+#### alternative model - lesion and grazing are correlated errors
+```{r les7}
+les7 <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  glmer(GrazingScars ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+          YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+lmer(LesionAreaLog ~ BladeAreaLog + Epifauna + DensityLog + CanopyHeight + 
+               TempAnomWarm_June + MonthlyMeanTemp_June +
+                YearBinary + (1|Meadow) + (1|Region),
+             data=dis2),
+  LesionAreaLog%~~%GrazingScars,
+  DensityLog%~~%CanopyHeight
+)
+summary(les7)
+coefs(les7)
+```
+
+Passes global test p=0.638, AIC = 106.898 Exactly 2 less than global model.
+
+```{r}
+df.AIC <- data.frame(model=c("les1", "les2", "les3", "les4", "les5", "les6", "les7"),
+                     AIC=c(108.898, 119.006, 192.544, 117.449, 123.318, 109.475, 106.898))
+df.AIC$deltaAIC <- df.AIC$AIC-min(df.AIC$AIC)
+df.AIC$likelihood <- exp(-df.AIC$deltaAIC/2)
+df.AIC$weight <- df.AIC$likelihood/sum(df.AIC$likelihood)
+tibble(df.AIC)
+```
+
