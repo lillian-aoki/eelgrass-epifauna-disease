@@ -1,0 +1,183 @@
+---
+title: "Untitled"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+source("R/helpers.R")
+source("R/coefs.R")
+library(nlme)
+library(lme4)
+library(dplyr)
+library(readr)
+library(DHARMa)
+library(ggplot2)
+library(GGally)
+library(optimx)
+library(performance)
+library(piecewiseSEM)
+```
+
+# SEMs comparing epifauna vs lacuna vs ampithoid
+
+```{r data}
+# data ###
+dis <- read_csv("data/epiphyte_SEM_data.csv")
+dis$BladeAreaLog <- log10(dis$BladeArea)
+# dis$BladeArea_cm2 <- dis$BladeArea/100 # already in cm2 previously
+dis$YearFactor <- gsub("2019", "1", dis$YearFactor)
+dis$YearFactor <- gsub("2020", "2", dis$YearFactor)
+dis$YearFactor <- gsub("2021", "3", dis$YearFactor)
+dis2 <- dis[-c(which(is.na(dis$EpiphyteDryMass))),] # need this because epiphytes missing e.g. OR 2020
+dis2$EpiphyteDetected <- ifelse(dis2$EpiphyteDryMass==0, 0, 1)
+
+```
+
+## Prevalence + Epifauna
+
+```{r prev1}
+# dat <- select(dis2, c(Epifauna, TempAnomWarm_June, MonthlyMeanTemp_June, CanopyHeight, DensityLog, 
+#                       YearFactor, Meadow, Region, EpiphyteDetected, BladeAreaLog, Epifauna, 
+#                       TidalHeightBinary, Prevalence, LesionArea, Lacuna, Ampithoid))
+sem_prev_epi <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearFactor +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearFactor + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearFactor + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  glmer(EpiphyteDetected ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  Epifauna +
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearFactor + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearFactor +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+  glmer(Prevalence ~ EpiphyteDetected + BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearFactor + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_epi)
+
+```
+
+Model passes global fit. Epifauna is positive and significant predictor for Prevalence
+
+```{r}
+coefs(sem_prev_epi)
+```
+
+
+## prev + lac
+
+```{r}
+dis3 <- subset(dis2, Lacuna>0)
+dis3 <- dis2[-which(is.na(dis2$Lacuna)),]
+sem_prev_lac <- psem(
+  lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearFactor +
+         (1|Meadow) + (1|Region),
+       data=dis3),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearFactor + 
+         (1|Meadow) + (1|Region),
+       data=dis3),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearFactor + 
+         (1|Meadow) + (1|Region),
+       data=dis3),
+  glmer(EpiphyteDetected ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  Lacuna +
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearFactor + 
+          (1|Region) + (1|Meadow),
+        data=dis3,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearFactor +
+         (1|Region) + (1|Meadow),
+       data=dis3),
+  glmer(Prevalence ~ EpiphyteDetected + BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearFactor + 
+          (1|Region) + (1|Meadow),
+        data=dis3,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_lac)
+
+```
+
+
+```{r}
+coefs(sem_prev_lac)
+```
+
+## prev + amp
+
+```{r}
+dis4 <- dis2[-which(is.na(dis2$Ampithoid)),]
+
+sem_prev_amp <- psem(
+  lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearFactor +
+         (1|Meadow) + (1|Region),
+       data=dis4),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearFactor + 
+         (1|Meadow) + (1|Region),
+       data=dis4),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearFactor + 
+         (1|Meadow) + (1|Region),
+       data=dis4),
+  glmer(EpiphyteDetected ~ CanopyHeight + DensityLog + 
+          BladeAreaLog +  Ampithoid +
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearFactor + 
+          (1|Region) + (1|Meadow),
+        data=dis4,
+        family = "binomial"),
+  lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearFactor +
+         (1|Region) + (1|Meadow),
+       data=dis4),
+  glmer(Prevalence ~ EpiphyteDetected + BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearFactor + 
+          (1|Region) + (1|Meadow),
+        data=dis4,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_amp)
+
+```
+
+ampithoid is negative for prevalence
+
+```{r}
+coefs(sem_prev_amp)
+```
+
