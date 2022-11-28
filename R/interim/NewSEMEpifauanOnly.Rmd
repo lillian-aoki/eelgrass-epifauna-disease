@@ -1,0 +1,764 @@
+---
+title: "Community Interaction SEM results"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(here)
+source(here("R/helpers.R"))
+source(here("R/coefs.R"))
+library(nlme)
+library(lme4)
+library(dplyr)
+library(readr)
+library(DHARMa)
+library(ggplot2)
+library(GGally)
+library(optimx)
+library(performance)
+library(piecewiseSEM)
+library(effects)
+```
+
+# SEMs comparing epifauna vs lacuna vs ampithoid
+
+```{r data}
+# data ###
+dis <- read_csv("data/epiphyte_SEM_data.csv")
+dis$BladeAreaLog <- log10(dis$BladeArea)
+# use the full data set without subsetting because the SEM no longer includes epiphytes or grazing
+dis1 <- select(dis, c(Epifauna, TempAnomWarm_June, MonthlyMeanTemp_June, CanopyHeight, DensityLog, YearBinary, Year, Meadow, Region,
+                      BladeAreaLog, TidalHeightBinary, Prevalence, LesionArea, Lacuna, Ampithoid))
+```
+
+## Prevalence + Epifauna
+
+```{r prev1}
+dis2 <- select(dis1, -c(Lacuna, Ampithoid))
+dis2 <- na.omit(dis2)
+sem_prev_epi <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis2),
+    lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis2),
+  glmer(Prevalence ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis2,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_epi)
+
+```
+
+Model passes global fit. Epifauna is positive and significant predictor for Prevalence. 
+
+```{r}
+coefs(sem_prev_epi)
+```
+
+
+## prev + lac
+
+```{r}
+dis3 <- select(dis1, -c(Epifauna, Ampithoid))
+dis3 <- dis3[-which(is.na(dis3$Lacuna)),] # omit missing Lacuna values
+dis3 <- na.omit(dis3) # remove any other NAs (missing blade area for one)
+
+sem_prev_lac <- psem(
+  lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis3),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis3),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis3),
+  lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis3),
+  glmer(Prevalence ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis3,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_lac)
+
+```
+Passes global fit test
+Lacuna effect on Prevalence is sig and positive
+
+```{r}
+coefs(sem_prev_lac)
+```
+
+## prev + amp
+
+```{r}
+dis4 <- select(dis1, -c(Epifauna, Lacuna))
+dis4 <- dis4[-which(is.na(dis4$Ampithoid)),] # omit missing Ampithoid values
+dis4 <- na.omit(dis4) # remove any other NAs (missing blade area for one)
+
+sem_prev_amp <- psem(
+  lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis4),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis4),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis4),
+  lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis4),
+  glmer(Prevalence ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis4,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_amp)
+
+```
+
+Passes global fit test. Ampithoid is negative for prevalence
+
+```{r}
+coefs(sem_prev_amp)
+```
+
+## Limit to complete cases (sites with lacuna and ampithoids)
+
+### epifauna
+```{r cc_epi}
+
+dis_cc <- na.omit(dis1) # remove missing Epifauna, Lacuna, and Ampithoid values, plus any other NAs (missing blade area for one)
+
+sem_prev_epi_cc <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+    lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_cc),
+  glmer(Prevalence ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis_cc,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_epi_cc)
+
+```
+
+Passes global fit test. Epifauna is positive and significant for prevalence. 
+
+Standardized coefs of sem:
+
+```{r}
+coefs(sem_prev_epi_cc)
+```
+### lacuna
+```{r cc_lac}
+
+sem_prev_lac_cc <- psem(
+  lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+  lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_cc),
+  glmer(Prevalence ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis_cc,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_lac_cc)
+
+
+```
+
+Passes global fit test. Lacuna is positive and sig for prevalence.
+
+```{r}
+coefs(sem_prev_lac_cc)
+```
+
+### ampithoid
+```{r}
+sem_prev_amp_cc <- psem(
+  lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_cc),
+  lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_cc),
+  glmer(Prevalence ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis_cc,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_amp_cc)
+```
+
+Passes global fit test. Ampithoid is negative for prevalence. Epiphyte presence not sig for prevalence
+
+```{r}
+coefs(sem_prev_amp_cc)
+```
+
+## Lesion + Epifauna
+```{r les_dat}
+les1 <- subset(dis1, LesionArea>0)
+les1$LesionAreaLog <- log10(les1$LesionArea)
+```
+
+```{r}
+
+les2 <- select(les1, -c(Lacuna, Ampithoid))
+les2 <- na.omit(les2)
+sem_les_epi <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les2),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les2),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les2),
+    lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les2),
+  lmer(LesionAreaLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les2),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_epi)
+```
+
+Passes global fit test. Epifauna is sig and pos for Lesion Area
+Standardized coefs:
+
+```{r}
+coefs(sem_les_epi)
+```
+
+## Lesion + Lacuna
+```{r}
+les3 <- select(les1, -c(Epifauna, Ampithoid))
+les3 <- na.omit(les3)
+sem_les_lac <- psem(
+  lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les3),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les3),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les3),
+    lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les3),
+  lmer(LesionAreaLog ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les3),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_lac)
+```
+Passes global fit test. Lacuna is sig and pos for Lesion Area
+Standardized coefs:
+
+```{r}
+coefs(sem_les_lac)
+```
+
+## Lesion + Ampithoid
+```{r}
+les4 <- select(les1, -c(Epifauna, Lacuna))
+les4 <- na.omit(les4)
+sem_les_amp <- psem(
+  lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les4),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les4),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les4),
+    lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les4),
+  lmer(LesionAreaLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les4),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_amp)
+```
+
+Passes global fit test. Ampithoid is significant and negative for lesion area
+Standarized coefs:
+
+```{r}
+coefs(sem_les_amp)
+```
+
+## Complete cases 
+
+```{r}
+# limit to complete cases of lesion data
+les_cc <- subset(dis_cc, LesionArea>0)
+les_cc$LesionAreaLog <- log10(les_cc$LesionArea)
+```
+
+### CC lesion + Epifauna
+
+```{r}
+sem_les_epi_cc <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+    lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les_cc),
+  lmer(LesionAreaLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_cc),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_epi_cc)
+```
+Passes global fit test. Epifauna is sig and pos for Lesion area
+
+```{r}
+coefs(sem_les_epi_cc)
+
+```
+
+### CC lesion + Lacuna
+
+```{r}
+sem_les_lac_cc <- psem(
+  lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+    lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les_cc),
+  lmer(LesionAreaLog ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_cc),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_lac_cc)
+```
+Passes global fit test. Lacuana is sig and positive for lesion area
+Standardized coefs:
+
+```{r}
+coefs(sem_les_lac_cc)
+```
+
+### CC lesion + ampithoid
+```{r}
+sem_les_amp_cc <- psem(
+  lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_cc),
+    lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les_cc),
+  lmer(LesionAreaLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_cc),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_amp_cc)
+```
+
+Passes global fit test. Ampithoid is sig and negative for lesion area.
+
+```{r}
+coefs(sem_les_amp_cc)
+```
+
+## SEM Conclusions
+- Epifauna abundance influences disease  
+- Lacuna and ampithoid abundance show contrasting effects, could be explained by contrasting mechanisms  
+- Limited mediation of temperature effects  
+
+# Partial Residuals
+Use models that include all cases (not complete case data), plot partial residuals of epifauna, lacuana, and ampithoid for disease response variables (prevalence and lesion area)
+
+## Prevalence
+```{r}
+# approach from Duffy 2015 - doesn't work for binomial glmm
+# create list of models for prev ~ epifauna
+# pre_epi_model <- list(glm(Prevalence ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary, 
+#           # random=~1|Region/Meadow,
+#         data=dis2,
+#         family="binomial"))
+# try <- partialResid(Prevalence ~ Epifauna, pre_epi_model)
+# PrevalenceResidY <- resid(glmer(Prevalence ~ BladeAreaLog + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary +
+#             (1|Region) +(1|Meadow), 
+#         data=dis2,
+#         family="binomial"))
+# EpifaunaResidX <- resid(lmer(Epifauna ~ BladeAreaLog + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary +
+#             (1|Region) +(1|Meadow), 
+#         data=dis2))
+# plot(exp(PrevalenceResidY)~EpifaunaResidX)
+# alternative is using the effects package
+prev_epi_1 <- glmer(Prevalence ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis2,
+        family="binomial")
+plot(predictorEffect("Epifauna", prev_epi_1, partial.residuals=TRUE))
+# will want to try and get the year/site means plotted onto this plot, but can hold off for now?
+prev_lac_1 <- glmer(Prevalence ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis3,
+        family="binomial")
+plot(predictorEffect("Lacuna", prev_lac_1, partial.residuals=TRUE))
+
+prev_amp_1 <- glmer(Prevalence ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis4,
+        family="binomial")
+plot(predictorEffect("Ampithoid", prev_amp_1,partial.residuals=TRUE))
+```
+
+## Lesion
+### Epifauna
+```{r}
+# have to re-specify the model using lme() because partialResid() doens't work with lmer()
+les_epi_model <- list(lesion=lme(LesionAreaLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary, 
+          random=~1|Region/Meadow,
+        data=les2))
+les_epi_resid <- partialResid(LesionAreaLog ~ Epifauna, modelList=les_epi_model)
+les_epi_resid_df <- cbind(les2, EpifaunaResidX=les_epi_resid$xresid, LesionResidY=les_epi_resid$yresid)
+les_epi_resid_summ <- les_epi_resid_df %>%
+  group_by(Year, Meadow)%>%
+  summarise(EpifaunaResidX_Meadow=mean(EpifaunaResidX),
+            LesionResidY_Meadow=mean(LesionResidY))
+ggplot()+
+  geom_point(data=les_epi_resid,aes(x=xresid,y=yresid),size=2.5,alpha=0.75,col="grey50")+
+  stat_smooth(data=les_epi_resid,aes(x=xresid,y=yresid),method="lm",se=F,lwd=1,col="black")+
+  geom_point(data=les_epi_resid_summ, aes(x=EpifaunaResidX_Meadow, y=LesionResidY_Meadow, color=as.factor(Year)),
+             size=3)+
+  scale_color_discrete(name="Year")+
+  labs(x="Log Epifauna | others",y="Log Lesion Area | others",nrow=2)+
+  theme_bw(base_size=18)+
+  guides(col=guide_legend(ncol=2))+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())
+
+# coefs(les_epi_1)
+# plot(les_epi_resid)
+# les_epi_resid <- partialResid(LesionAreaLog ~ Epifauna + (1|Meadow) + (1|Region), modelList = sem_les_epi)
+# les_yresid <- resid(lmer(LesionAreaLog ~ BladeAreaLog + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=les2))
+# les_xresid <- resid(lmer(Epifauna ~ BladeAreaLog + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=les2))
+# plot(les_xresid, les_yresid)
+```
+
+
+```{r}
+# re-set sem as all lme()
+sem_les_epi_1 <- psem(
+  lme(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary,
+      random=~1|Region/Meadow,
+       data=les2),
+  lme(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary,
+      random=~1|Region/Meadow,
+       data=les2),
+  lme(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary,
+      random=~1|Region/Meadow,
+       data=les2),
+    lme(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary,
+      random=~1|Region/Meadow,
+       data=les2),
+  lme(LesionAreaLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary,  
+      random=~1|Region/Meadow,
+        data=les2),
+  DensityLog%~~%CanopyHeight
+)
+
+les_epi_resid_1 <- partialResid(LesionAreaLog ~ Epifauna, modelList=sem_les_epi_1)
+les_epi_resid1_df <- cbind(les2, EpifaunaResidX=les_epi_resid_1$xresid, LesionResidY=les_epi_resid_1$yresid)
+les_epi_resid1_summ <- les_epi_resid1_df %>%
+  group_by(Year, Meadow)%>%
+  summarise(EpifaunaResidX_Meadow=mean(EpifaunaResidX),
+            LesionResidY_Meadow=mean(LesionResidY))
+ggplot()+
+  geom_point(data=les_epi_resid_1,aes(x=xresid,y=yresid),size=2.5,alpha=0.75,col="grey50")+
+  stat_smooth(data=les_epi_resid_1,aes(x=xresid,y=yresid),method="lm",se=F,lwd=1,col="black")+
+  geom_point(data=les_epi_resid1_summ, aes(x=EpifaunaResidX_Meadow, y=LesionResidY_Meadow, color=as.factor(Year)),
+             size=3)+
+  scale_color_discrete(name="Year")+
+  labs(x="Log Epifauna | others",y="Log Lesion Area | others",nrow=2)+
+  theme_bw(base_size=18)+
+  guides(col=guide_legend(ncol=2))+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())
+
+
+```
+
+### Lacuna
+```{r}
+# have to re-specify the model using lme() because partialResid() doens't work with lmer()
+les_lac_model <- list(lesion=lme(LesionAreaLog ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary, 
+          random=~1|Region/Meadow,
+        data=les3))
+les_lac_resid <- partialResid(LesionAreaLog ~ Lacuna, modelList=les_lac_model)
+les_lac_resid_df <- cbind(les3, LacunaResidX=les_lac_resid$xresid, LesionResidY=les_lac_resid$yresid)
+les_lac_resid_summ <- les_lac_resid_df %>%
+  group_by(Year, Meadow)%>%
+  summarise(LacunaResidX_Meadow=mean(LacunaResidX),
+            LesionResidY_Meadow=mean(LesionResidY))
+ggplot()+
+  geom_point(data=les_lac_resid,aes(x=xresid,y=yresid),size=2.5,alpha=0.75,col="grey50")+
+  stat_smooth(data=les_lac_resid,aes(x=xresid,y=yresid),method="lm",se=F,lwd=1,col="black")+
+  geom_point(data=les_lac_resid_summ, aes(x=LacunaResidX_Meadow, y=LesionResidY_Meadow, color=as.factor(Year)),
+             size=3)+
+  scale_color_discrete(name="Year")+
+  labs(x="Log Lacuna | others",y="Log Lesion Area | others",nrow=2)+
+  theme_bw(base_size=18)+
+  guides(col=guide_legend(ncol=2))+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())
+```
+
+### Ampithoid
+```{r}
+# have to re-specify the model using lme() because partialResid() doens't work with lmer()
+les_amp_model <- list(lesion=lme(LesionAreaLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary, 
+          random=~1|Region/Meadow,
+        data=les4))
+les_amp_resid <- partialResid(LesionAreaLog ~ Ampithoid, modelList=les_amp_model)
+les_amp_resid_df <- cbind(les4, AmpithoidResidX=les_amp_resid$xresid, LesionResidY=les_amp_resid$yresid)
+les_amp_resid_summ <- les_amp_resid_df %>%
+  group_by(Year, Meadow)%>%
+  summarise(AmpithoidResidX_Meadow=mean(AmpithoidResidX),
+            LesionResidY_Meadow=mean(LesionResidY))
+ggplot()+
+  geom_point(data=les_amp_resid,aes(x=xresid,y=yresid),size=2.5,alpha=0.75,col="grey50")+
+  stat_smooth(data=les_amp_resid,aes(x=xresid,y=yresid),method="lm",se=F,lwd=1,col="black")+
+  geom_point(data=les_amp_resid_summ, aes(x=AmpithoidResidX_Meadow, y=LesionResidY_Meadow, color=as.factor(Year)),
+             size=3)+
+  scale_color_discrete(name="Year")+
+  labs(x="Log Ampithoid | others",y="Log Lesion Area | others",nrow=2)+
+  theme_bw(base_size=18)+
+  guides(col=guide_legend(ncol=2))+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())
+```
+
+Alternatively, use the effects package and look at partial correlations using effect plot
+
+```{r}
+
+les_epi_1 <- lmer(LesionAreaLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les2)
+plot(predictorEffect("Epifauna", les_epi_1, partial.residuals=TRUE))
+
+
+les_lac_1 <- lmer(LesionAreaLog ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les3)
+plot(predictorEffect("Lacuna", les_lac_1, partial.residuals=TRUE))
+
+
+les_amp_1 <- lmer(LesionAreaLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les4)
+plot(predictorEffect("Ampithoid", les_amp_1, partial.residuals=TRUE))
+
+```
+
