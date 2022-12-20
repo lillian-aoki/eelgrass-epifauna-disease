@@ -2745,3 +2745,61 @@ plot(predictorEffect("Ampithoid", les_amp_1, partial.residuals=TRUE))
 ```
 
 ![](NewSEMEpifauanOnly_files/figure-gfm/unnamed-chunk-28-3.png)<!-- -->
+
+# Distributions
+
+``` r
+dis2$Region <- ordered(dis2$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(dis2, aes(x=Epifauna, fill=Region))+geom_histogram(bins=15)
+```
+
+![](NewSEMEpifauanOnly_files/figure-gfm/histograms-prev-1.png)<!-- -->
+
+``` r
+dis3$Region <- ordered(dis3$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(dis3, aes(x=Lacuna, fill=Region))+geom_histogram(bins=15)
+```
+
+![](NewSEMEpifauanOnly_files/figure-gfm/histograms-prev-2.png)<!-- -->
+
+``` r
+dis4$Region <- ordered(dis4$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(dis4, aes(x=Ampithoid, fill=Region))+geom_histogram(bins=15)
+```
+
+![](NewSEMEpifauanOnly_files/figure-gfm/histograms-prev-3.png)<!-- -->
+
+``` r
+dis_cc$Region <- ordered(dis_cc$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(dis_cc, aes(x=Epifauna, fill=Region))+geom_histogram(bins=15)
+```
+
+![](NewSEMEpifauanOnly_files/figure-gfm/histograms-prev-4.png)<!-- -->
+
+``` r
+les2$Region <- ordered(les2$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(les2, aes(x=Epifauna, fill=Region))+geom_histogram(bins=15)
+```
+
+![](NewSEMEpifauanOnly_files/figure-gfm/histograms-les-1.png)<!-- -->
+
+``` r
+les3$Region <- ordered(les3$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(les3, aes(x=Lacuna, fill=Region))+geom_histogram(bins=15)
+```
+
+![](NewSEMEpifauanOnly_files/figure-gfm/histograms-les-2.png)<!-- -->
+
+``` r
+les4$Region <- ordered(les4$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(les4, aes(x=Ampithoid, fill=Region))+geom_histogram(bins=15)
+```
+
+![](NewSEMEpifauanOnly_files/figure-gfm/histograms-les-3.png)<!-- -->
+
+``` r
+les_cc$Region <- ordered(les_cc$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(les_cc, aes(x=Epifauna, fill=Region))+geom_histogram(bins=15)
+```
+
+![](NewSEMEpifauanOnly_files/figure-gfm/histograms-les-4.png)<!-- -->

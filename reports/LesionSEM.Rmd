@@ -37,6 +37,8 @@ Different SEMs compared to answer specific questions:
 - does epifauna abundance or grazing influence lesion area directly? 
 - does grazing drive disease or does disease drive grazing (i.e. increased grazing increases disease versus diseaed plants accumulating more grazing scars)
 
+**updated to fix data input - only 5 blades for all sites in 2019**
+
 ```{r data}
 # data ###
 dis <- read_csv("data/meadow_predictors_blade_SEM_data.csv")
@@ -91,7 +93,7 @@ summary(les1)
 coefs(les1)
 ```
 
-Passes global fit (p=0.68), AIC = 108.898 Lesion area has grazing and epifauna links, no temp effect significant
+Passes global fit (p=0.29), AIC = 110.470 Lesion area has grazing and epifauna links, no temp effect significant
 
 #### alternative model - no temp to lesion
 ```{r }
@@ -130,7 +132,7 @@ summary(les2)
 # coefs(les2)
 ```
 
-Does not pass global fit test (p = 0.02). AIC = 119.006. D-sep shows temp effects on lesion area are missing and significant.
+Does not pass global fit test (p = 0.046). AIC = 116.836. ~~D-sep shows temp effects on lesion area are missing and significant.~~
 
 #### alternative model - no temp to grazing
 ```{r}
@@ -169,7 +171,7 @@ summary(les3)
 # coefs(les3)
 ```
 
-Doesn't pass global test (p=0), AIC = 192.544. Temp effects on grazing scars are missing
+Doesn't pass global test (p=0), AIC = 167.252. Temp effects on grazing scars are missing
 
 #### alternative model - no grazing to lesion
 ```{r les4}
@@ -208,7 +210,7 @@ lmer(LesionAreaLog ~ BladeAreaLog + Epifauna + DensityLog + CanopyHeight +
 summary(les4)
 ```
 
-Doesn't pass (p=0.02), AIC= 117.449, d-sep shows need for grazing to lesion
+Does pass (p=0.082), AIC= 114.283, ~~d-sep shows need for grazing to lesion~~
 
 #### alternative model - no epifauna to lesion
 ```{r les5}
@@ -247,7 +249,7 @@ lmer(LesionAreaLog ~ GrazingScars + BladeAreaLog + DensityLog + CanopyHeight +
 summary(les5)
 ```
 
-Fails global fit test (p=0.002), AIC = 123.318 D-sep  indicates need for epifauna to lesion area  
+Fails global fit test (p=0.005), AIC = 120.755 D-sep  indicates need for epifauna to lesion area  
 
 #### alternative model - reverse direction from lesion to grazing
 
@@ -287,7 +289,7 @@ lmer(LesionAreaLog ~  BladeAreaLog + Epifauna + DensityLog + CanopyHeight +
 summary(les6)
 ```
 
-Passes global fit (p=0.478). AIC = 109.475 (slightly higher than for the original model)
+Passes global fit (p=0.224). AIC = 110.989 (slightly higher than for the original model)
 
 #### alternative model - lesion and grazing are correlated errors
 ```{r les7}
@@ -328,7 +330,7 @@ summary(les7)
 coefs(les7)
 ```
 
-Passes global test p=0.638, AIC = 106.898 Exactly 2 less than global model.
+Passes global test p=0.291, AIC = 108.470 Exactly 2 less than global model.
 
 ```{r}
 df.AIC <- data.frame(model=c("les1", "les2", "les3", "les4", "les5", "les6", "les7"),
