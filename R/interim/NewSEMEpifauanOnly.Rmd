@@ -27,8 +27,9 @@ library(effects)
 dis <- read_csv("data/epiphyte_SEM_data.csv")
 dis$BladeAreaLog <- log10(dis$BladeArea)
 # use the full data set without subsetting because the SEM no longer includes epiphytes or grazing
-dis1 <- select(dis, c(Epifauna, TempAnomWarm_June, MonthlyMeanTemp_June, CanopyHeight, DensityLog, YearBinary, Year, Meadow, Region,
-                      BladeAreaLog, TidalHeightBinary, Prevalence, LesionArea, Lacuna, Ampithoid, Idoteid))
+dis1 <- select(dis, c(Epifauna, TempAnomWarm_June, MonthlyMeanTemp_June, CanopyHeight, 
+                      DensityLog, YearBinary, Year, Meadow, Region,BladeAreaLog, TidalHeightBinary, 
+                      Prevalence, LesionArea, Lacuna, Ampithoid, Idoteid, Richness))
 ```
 
 ## Prevalence + Epifauna
@@ -78,7 +79,7 @@ coefs(sem_prev_epi)
 
 ```{r}
 dis3 <- select(dis1, -c(Epifauna, Ampithoid, Idoteid))
-dis3 <- dis3[-which(is.na(dis3$Lacuna)),] # omit missing Lacuna values
+# dis3 <- dis3[-which(is.na(dis3$Lacuna)),] # omit missing Lacuna values
 dis3 <- na.omit(dis3) # remove any other NAs (missing blade area for one)
 
 sem_prev_lac <- psem(
@@ -122,7 +123,7 @@ coefs(sem_prev_lac)
 
 ```{r}
 dis4 <- select(dis1, -c(Epifauna, Lacuna, Idoteid))
-dis4 <- dis4[-which(is.na(dis4$Ampithoid)),] # omit missing Ampithoid values
+# dis4 <- dis4[-which(is.na(dis4$Ampithoid)),] # omit missing Ampithoid values
 dis4 <- na.omit(dis4) # remove any other NAs (missing blade area for one)
 
 sem_prev_amp <- psem(
@@ -166,7 +167,7 @@ coefs(sem_prev_amp)
 
 ```{r}
 dis5 <- select(dis1, -c(Epifauna, Lacuna, Ampithoid))
-dis5 <- dis5[-which(is.na(dis5$Idoteid)),] # omit missing Ampithoid values
+# dis5 <- dis5[-which(is.na(dis5$Idoteid)),] # omit missing Ampithoid values
 dis5 <- na.omit(dis5) # remove any other NAs (missing blade area for one)
 
 sem_prev_ido <- psem(
@@ -200,14 +201,54 @@ summary(sem_prev_ido)
 
 ```
 
-Passes global fit test. Idoteid is significant and negative for prevalence. 
+Passes global fit test. Idoteid is not significant for prevalence (coefficient is positive). 
 
 ```{r}
 coefs(sem_prev_ido)
 ```
 
 ```{r}
-multigroup(sem_prev_ido, group = "Region")
+# multigroup(sem_prev_ido, group = "Region")
+```
+
+## prev + richness
+```{r}
+dis1$RichnessLog <- log10(dis1$Richness)
+dis1 <- na.omit(dis1)
+sem_prev_rich <- psem(
+  lmer(RichnessLog ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog 
+       + YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis1),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis1),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis1),
+  lmer(BladeAreaLog ~ RichnessLog + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis1),
+  glmer(Prevalence ~ BladeAreaLog + RichnessLog + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis1,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_rich)
+
+```
+
+Passes global fit but richness is not significant for disease prevalence. 
+```{r}
+coefs(sem_prev_rich)
 ```
 
 ## Limit to complete cases (sites with lacuna and ampithoids)
@@ -215,7 +256,9 @@ multigroup(sem_prev_ido, group = "Region")
 ### epifauna
 ```{r cc_epi}
 
-dis_cc <- na.omit(dis1) # remove missing Epifauna, Lacuna, and Ampithoid values, plus any other NAs (missing blade area for one)
+# dis_cc <- na.omit(dis1) 
+dis_cc <- subset(dis1, Lacuna!=-2 & Ampithoid !=-2) # non-zero values on log scale
+# remove missing Epifauna, Lacuna, and Ampithoid values, plus any other NAs (missing blade area for one)
 
 sem_prev_epi_cc <- psem(
   lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
@@ -498,6 +541,44 @@ Passes global fit test. Idoteid is NOT significant for Lesion Area, though coeff
 coefs(sem_les_ido)
 ```
 
+### Lesion + Richness
+
+```{r}
+sem_les_rich <- psem(
+  lmer(RichnessLog ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les1),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les1),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les1),
+    lmer(BladeAreaLog ~ RichnessLog + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les1),
+  lmer(LesionAreaLog ~ BladeAreaLog + RichnessLog + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les1),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_rich)
+```
+
+Passes global fit test. Richness does ppositively affect lesion area. Interesting.
+
+```{r}
+coefs(sem_les_rich)
+```
+
 
 ## Complete cases 
 
@@ -685,6 +766,14 @@ prev_ido_1 <- glmer(Prevalence ~ BladeAreaLog + Idoteid + CanopyHeight + Density
 
 plot(predictorEffect("Idoteid", prev_ido_1,partial.residuals=TRUE))
 
+prev_rich_1 <- glmer(Prevalence ~ BladeAreaLog + RichnessLog + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis1,
+        family="binomial")
+plot(predictorEffect("RichnessLog", prev_rich_1,partial.residuals=TRUE))
+
 ```
 
 ## Lesion
@@ -866,13 +955,21 @@ les_ido_1 <- lmer(LesionAreaLog ~ BladeAreaLog + Idoteid + CanopyHeight + Densit
         data=les5)
 plot(predictorEffect("Idoteid", les_ido_1, partial.residuals=TRUE))
 
+les_rich_1 <- lmer(LesionAreaLog ~ BladeAreaLog + RichnessLog + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les1)
+plot(predictorEffect("RichnessLog", les_rich_1, partial.residuals=TRUE))
+
+
 ```
 
 # Distributions
 ```{r histograms-prev}
 
 dis2$Region <- ordered(dis2$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
-ggplot(dis2, aes(x=Epifauna, fill=Region))+geom_histogram(bins=15)
+ggplot(dis2, aes(x=Epifauna, fill=Region))+geom_histogram(bins=30)
 
 dis3$Region <- ordered(dis3$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
 ggplot(dis3, aes(x=Lacuna, fill=Region))+geom_histogram(bins=15)
@@ -882,6 +979,10 @@ ggplot(dis4, aes(x=Ampithoid, fill=Region))+geom_histogram(bins=15)
 
 dis_cc$Region <- ordered(dis_cc$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
 ggplot(dis_cc, aes(x=Epifauna, fill=Region))+geom_histogram(bins=15)
+
+dis1$Region <- ordered(dis1$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(dis1, aes(x=Idoteid, fill=Region))+geom_histogram(bins=15)
+
 
 ```
 
@@ -898,5 +999,9 @@ ggplot(les4, aes(x=Ampithoid, fill=Region))+geom_histogram(bins=15)
 
 les_cc$Region <- ordered(les_cc$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
 ggplot(les_cc, aes(x=Epifauna, fill=Region))+geom_histogram(bins=15)
+
+les5$Region <- ordered(les1$Region, levels=c("AK", "BC", "WA", "OR", "BB", "SD"))
+ggplot(les5, aes(x=Idoteid, fill=Region))+geom_histogram(bins=15)
+
 
 ```
