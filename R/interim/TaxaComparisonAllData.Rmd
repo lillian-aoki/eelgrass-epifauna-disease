@@ -1,0 +1,139 @@
+---
+title: "Taxa Comparison All Data"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# library(here)
+# source(here("R/helpers.R"))
+# source(here("R/coefs.R"))
+# library(nlme)
+library(lme4)
+library(dplyr)
+library(readr)
+library(DHARMa)
+library(ggplot2)
+library(GGally)
+library(optimx)
+library(performance)
+# library(piecewiseSEM)
+library(effects)
+library(sjPlot)
+library(ggeffects)
+```
+
+## GLM and LM to assess taxa effects on disease
+
+Using all sites and years and not restricting to temperature data
+```{r data}
+all_epi <- read_csv("data/epifauna_for_region_specific_models_no_epiphyte.csv")
+all_epi$fYear <- as.factor(all_epi$Year)
+
+les <- subset(all_epi, LesionArea>0)
+les$LesionAreaLog <- log10(les$LesionArea)
+
+```
+
+## Prevalence
+
+Compare 3 models: epifauna predictors and seagrass predictors (blade area and density), epifauna predictors + blade area only, epifauna + density only.  
+
+```{r cars}
+prev1 <- glmer(Prevalence ~ BladeAreaLog + 
+                Ampithoid_large + Lacuna_large + Idoteid_large +
+                DensityLog + 
+                fYear +(1|Region) +(1|Meadow), 
+              family = "binomial", 
+              data=all_epi)
+
+prev2 <- glmer(Prevalence ~ BladeAreaLog + 
+                 Ampithoid_large + Lacuna_large + Idoteid_large +
+                 
+                 fYear +(1|Region) +(1|Meadow), 
+               family = "binomial", 
+               data=all_epi)
+
+prev3 <- glmer(Prevalence ~ 
+        Ampithoid_large + Lacuna_large + Idoteid_large +
+
+        fYear +(1|Region) +(1|Meadow), 
+      family = "binomial", 
+      data=all_epi)
+
+AIC(prev1, prev2, prev3)
+```
+
+By AIC, the model including epifauna taxa, blade area, and density is better than alternatives
+
+Check residuals
+``` {r}
+prev1_E <- simulateResiduals(prev1)
+plot(prev1_E)
+```
+
+Look at model results
+```{r prev_model}
+plot_model(prev1, type="std", show.p=T, show.values=T)
+plot(predictorEffects(prev1, partial.residuals=T))
+plot(predictorEffects(prev1))
+plot(predictorEffect("Ampithoid_large", prev1, partial.residuals=T))
+performance(prev1)
+```
+
+So, Lacuna abundance is significant and positive for prevalence. Other taxa are not significant. Standized coefficeint for Lacuna is larger than for density and similar to blade area. However, the model still explains only 37% of variation in disease (12% from fixed effects, including year).  
+
+## Lesion Area
+
+Compare same three models, but these are linear (using log transformed lesion area). Note, we could do a GLM with gamma distribution and log link but the coefficients are similar, and the log-transformed LM is the same as in the SEMs, so for consistency use the same model structure.  
+
+```{r}
+les1 <- lmer(LesionAreaLog ~ BladeAreaLog +
+               Ampithoid_large + Lacuna_large + Idoteid_large +
+               DensityLog + fYear + (1|Meadow) + (1|Region), 
+             data=les)
+
+les2 <- lmer(LesionAreaLog ~ BladeAreaLog +
+               Ampithoid_large + Lacuna_large + Idoteid_large +
+               fYear + (1|Meadow) + (1|Region), 
+             data=les)
+
+les3 <- lmer(LesionAreaLog ~ 
+               Ampithoid_large + Lacuna_large + Idoteid_large +
+               fYear + (1|Meadow) + (1|Region), 
+             data=les)
+
+AIC(les1, les2, les3)
+```
+
+Dropping shoot density improves the model somewhat. Use second model.
+
+Check residuals
+```{r}
+les2_E <- simulateResiduals(les2)
+plot(les2_E)
+```
+
+Look at model results
+```{r les_model}
+plot_model(les2, type="std", show.p=T, show.values=T)
+plot(predictorEffects(les2, partial.residuals=T))
+plot(predictorEffects(les2))
+performance(les2)
+```
+Similar to prevalence model, lacuna is significant and positive for lesion area. More snails = more disease. Idoteid is also positive, though effect size is less, and ampithoid and not significant. 
+
+```{r les_meadow_specific, include=F, echo=F}
+# les_lac <- ggpredict(les2, terms=c("Lacuna_large", "Region"), type="re")
+# les_ido <- ggpredict(les2, terms=c("Idoteid_large", "Region"), type="re")
+# les_amp <- ggpredict(les2, terms=c("Ampithoid_large", "Region"), type="re")
+# ggplot(les_lac, aes(x=x, y=predicted, color=group))+geom_line()+facet_wrap(~group)
+# ggplot(les_ido, aes(x=x, y=predicted, color=group))+geom_line()+facet_wrap(~group)
+# ggplot(les_amp, aes(x=x, y=predicted, color=group))+geom_line()+facet_wrap(~group)
+
+
+```
+## Conclusions
+
+1. Prevalence and lesion area increase with lacuna abundance; lesion area increases with idoteid abundance
+2. Pattern of decreasing lesion area with ampithoid abundance, but not significant across all sites and years - maybe due to relatively few sites with high abundances of ampithoids

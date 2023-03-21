@@ -1,0 +1,593 @@
+---
+title: "Community Interaction SEM results"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(here)
+source(here("R/helpers.R"))
+source(here("R/coefs.R"))
+library(nlme)
+library(lme4)
+library(dplyr)
+library(readr)
+library(DHARMa)
+library(ggplot2)
+library(GGally)
+library(optimx)
+library(performance)
+library(piecewiseSEM)
+library(effects)
+library(ggeffects)
+```
+
+# SEMs comparing epifauna vs lacuna vs ampithoid vs iodteid vs richness
+
+Try including epiphyte at the blade level. This variable was not important before, but I've changed the structure of the SEMs (two years only, meadow-scale predictors). And, the relationship with taxa might vary (haven't looked at that). Also, the data are now updated with better BB data.  
+
+A few notes:  
+ - Large epifauna only (except at BB). 
+ - Epiphyte blades only. A handful are missing due to no epiphytes (wrong leaf etc) 
+ - Zeros are included (not NAs), all sites for all models. 
+
+```{r data}
+# data ###
+dis <- read_csv("data/epiphyte_SEM_data_all_large.csv")
+# updating the SEM to compare the effects of using large vs all animals
+dis$BladeAreaLog <- log10(dis$BladeArea)
+dis$EpiphyteLog <- log10(dis$EpiphytePerAreamgcm2+0.01)
+# use the full data set without subsetting because the SEM no longer includes epiphytes or grazing
+dis1 <- select(dis, c(Epifauna = Epifauna_all, TempAnomWarm_June, MonthlyMeanTemp_June, CanopyHeight, 
+                      DensityLog, YearBinary, Year, Meadow, Region,BladeAreaLog, TidalHeightBinary, 
+                      Prevalence, LesionArea, EpiphytePerAreamgcm2, EpiphyteLog,
+                      Lacuna = Lacuna_all, 
+                      Ampithoid = Ampithoid_all, Idoteid = Idoteid_all, Richness = Richness_all))
+
+dis1_large <- select(dis, c(Epifauna = Epifauna_large, TempAnomWarm_June, MonthlyMeanTemp_June, CanopyHeight, 
+                      DensityLog, YearBinary, Year, Meadow, Region,BladeAreaLog, TidalHeightBinary, 
+                      Prevalence, LesionArea, EpiphyteLog, Lacuna = Lacuna_large, 
+                      Ampithoid = Ampithoid_large, Idoteid = Idoteid_large, Richness = Richness_large))
+dis_large <- na.omit(dis1_large)
+```
+
+## Prevalence + Epifauna
+
+```{r prev1}
+sem_prev_epi <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+    lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + 
+          Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis_large,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_epi)
+
+```
+
+```{r}
+coefs(sem_prev_epi)
+```
+
+## Prev + Amp
+```{r prev2}
+sem_prev_amp <- psem(
+  lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+    lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + 
+          Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis_large,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_amp)
+
+```
+
+```{r}
+coefs(sem_prev_amp)
+```
+
+
+## Prev + Lac
+
+```{r prev3}
+sem_prev_lac <- psem(
+  lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+    lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + 
+          Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis_large,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_lac)
+
+```
+
+
+```{r}
+coefs(sem_prev_lac)
+```
+
+
+
+## Prev + Ido
+```{r prev4}
+sem_prev_ido <- psem(
+  lmer(Idoteid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+    lmer(BladeAreaLog ~ Idoteid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Idoteid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + 
+          Idoteid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis_large,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_ido)
+
+```
+
+```{r}
+coefs(sem_prev_ido)
+```
+
+## Prev + Rich
+
+```{r prev5}
+sem_prev_rich <- psem(
+  lmer(Richness ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=dis_large),
+    lmer(BladeAreaLog ~ Richness + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Richness + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=dis_large),
+  glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + 
+          Richness + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=dis_large,
+        family = "binomial"),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_prev_rich)
+
+```
+
+```{r}
+coefs(sem_prev_rich)
+```
+
+
+## Lesion + Epifauna
+
+```{r les_dat}
+les_large <- subset(dis_large, LesionArea>0)
+les_large$LesionAreaLog <- log10(les_large$LesionArea)
+les_large <- na.omit(les_large)
+```
+
+```{r les_epi}
+sem_les_epi <- psem(
+  lmer(Epifauna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+    lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_epi)
+```
+
+Passes global fit test. Epifauna is sig and pos for Lesion Area
+Standardized coefs:
+
+```{r}
+coefs(sem_les_epi)
+```
+
+## Lesion + Amp
+
+```{r les_amp}
+sem_les_amp <- psem(
+  lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+    lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_amp)
+```
+
+
+Standardized coefs:
+
+```{r}
+coefs(sem_les_amp)
+```
+
+## Lesion + Lac
+
+```{r les_lac}
+sem_les_lac <- psem(
+  lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+    lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_lac)
+```
+
+
+
+
+```{r}
+coefs(sem_les_lac)
+```
+
+## Lesion + Ido
+
+```{r les_ido}
+sem_les_ido <- psem(
+  lmer(Idoteid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+    lmer(BladeAreaLog ~ Idoteid + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Idoteid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Idoteid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_ido)
+```
+
+
+
+```{r}
+coefs(sem_les_ido)
+```
+
+## Lesion + Rich
+
+```{r les_rich}
+sem_les_rich <- psem(
+  lmer(Richness ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         CanopyHeight + DensityLog +
+         YearBinary +
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+  lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+         YearBinary + 
+         (1|Meadow) + (1|Region),
+       data=les_large),
+    lmer(BladeAreaLog ~ Richness + CanopyHeight + DensityLog + 
+         TempAnomWarm_June + MonthlyMeanTemp_June +
+         TidalHeightBinary + YearBinary +
+         (1|Region) + (1|Meadow),
+       data=les_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Richness + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Richness + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary + 
+          (1|Region) + (1|Meadow),
+        data=les_large),
+  DensityLog%~~%CanopyHeight
+)
+summary(sem_les_rich)
+```
+
+Passes global fit test. Epifauna is sig and pos for Lesion Area
+Standardized coefs:
+
+```{r}
+coefs(sem_les_rich)
+```
+
+## Partial coefficients
+
+### prevalence
+
+```{r}
+prev_epi_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis_large,
+        family="binomial")
+plot(predictorEffect("Epifauna", prev_epi_1, partial.residuals=T))
+# will want to try and get the year/site means plotted onto this plot, but can hold off for now?
+prev_lac_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis_large,
+        family="binomial")
+plot(predictorEffect("Lacuna", prev_lac_1, partial.residuals=T))
+
+prev_amp_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis_large,
+        family="binomial")
+plot(predictorEffect("Ampithoid", prev_amp_1,partial.residuals=TRUE))
+
+prev_ido_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Idoteid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis_large,
+        family="binomial")
+
+plot(predictorEffect("Idoteid", prev_ido_1,partial.residuals=T))
+
+prev_rich_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Richness + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=dis_large,
+        family="binomial")
+plot(predictorEffect("Richness", prev_rich_1,partial.residuals=TRUE, main="type='link'"))
+
+```
+
+### lesion
+
+```{r}
+
+les_epi_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Epifauna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les_large)
+plot(predictorEffect("Epifauna", les_epi_1, partial.residuals=TRUE))
+
+
+les_lac_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Lacuna + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les_large)
+plot(predictorEffect("Lacuna", les_lac_1, partial.residuals=TRUE))
+
+
+les_amp_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Ampithoid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les_large)
+plot(predictorEffect("Ampithoid", les_amp_1, partial.residuals=TRUE))
+
+
+les_ido_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Idoteid + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les_large)
+plot(predictorEffect("Idoteid", les_ido_1, partial.residuals=TRUE))
+  
+
+les_rich_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Richness + CanopyHeight + DensityLog + 
+          TempAnomWarm_June + MonthlyMeanTemp_June + 
+          TidalHeightBinary + YearBinary +
+            (1|Region) +(1|Meadow), 
+        data=les_large)
+plot(predictorEffect("Richness", les_rich_1, partial.residuals=T, type="rescale"))
+# plot(ggpredict(les_rich_1, terms = "Richness"), rawdata = TRUE, labels = scales::log10_trans())
+
+```
