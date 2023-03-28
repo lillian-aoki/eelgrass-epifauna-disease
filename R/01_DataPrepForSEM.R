@@ -173,7 +173,14 @@ write_csv(all_epi2, "data/epifauna_for_region_specific_models_no_epiphyte.csv")
 
 ## meadow scale variables for plots
 
-all_site <- full_join(sg_site, epi_site, by=c("Year" = "year", "Region" = "region", "Meadow"))
+sg_site2 <- sg %>%
+  group_by(Year, Region, SiteCode) %>%
+  summarise(Density=mean(DensityShootsMean, na.rm=T), CanopyHeight=mean(CanopyHeight, na.rm=T)/1000,
+            DensityLog=log10(Density), Prevalence=mean(PrevalenceMean), LesionArea=mean(LesionAreaMean),
+            LesionAreaLog=log10(LesionArea)) %>%
+  mutate(Meadow=paste(Region, SiteCode, sep="_"), MeadowYear=paste(Meadow, Year, sep="_"))
+
+all_site <- full_join(sg_site2, epi_site, by=c("Year" = "year", "Region" = "region", "Meadow"))
 all_site <- full_join(meta_site, all_site)
 
 

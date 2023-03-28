@@ -26,9 +26,10 @@ library(ggeffects)
 Try including epiphyte at the blade level. This variable was not important before, but I've changed the structure of the SEMs (two years only, meadow-scale predictors). And, the relationship with taxa might vary (haven't looked at that). Also, the data are now updated with better BB data.  
 
 A few notes:  
- - Large epifauna only (except at BB). 
- - Epiphyte blades only. A handful are missing due to no epiphytes (wrong leaf etc) 
- - Zeros are included (not NAs), all sites for all models. 
+ - Large epifauna only (except at BB).  
+ - Epiphyte blades only. A handful are missing due to no epiphytes (wrong leaf etc)  
+ - Zeros are included (not NAs), all sites for all models.  
+ - Taxa abundances are log-transformed. 
 
 ```{r data}
 # data ###
@@ -48,6 +49,11 @@ dis1_large <- select(dis, c(Epifauna = Epifauna_large, TempAnomWarm_June, Monthl
                       Prevalence, LesionArea, EpiphyteLog, Lacuna = Lacuna_large, 
                       Ampithoid = Ampithoid_large, Idoteid = Idoteid_large, Richness = Richness_large))
 dis_large <- na.omit(dis1_large)
+dis_large$Meadow_Year <- paste(dis_large$Meadow, dis_large$Year, sep = "_")
+site_large <- distinct(dis_large, Meadow_Year, .keep_all = T)
+site_large <- select(site_large, -c(Prevalence, LesionArea, EpiphyteLog, TidalHeightBinary, BladeAreaLog))
+# site <- read_csv("data/epifauna_site_for_plotting.csv")
+# site <- select(site, c())
 ```
 
 ## Prevalence + Epifauna
@@ -58,15 +64,15 @@ sem_prev_epi <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
     lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -90,8 +96,15 @@ summary(sem_prev_epi)
 
 ```
 
+Passes global fit.  
+
+Epifauna abundance is significant and positive predictor of prevalence.  
+
+Coefficient table:  
+
 ```{r}
-coefs(sem_prev_epi)
+a <- coefs(sem_prev_epi)
+knitr::kable(a, digits = 4)
 ```
 
 ## Prev + Amp
@@ -101,15 +114,15 @@ sem_prev_amp <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
     lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -133,8 +146,16 @@ summary(sem_prev_amp)
 
 ```
 
+
+Passes global fit.  
+
+Ampithoid abundance is not significant predictor of prevalence.  
+
+Coefficient table:  
 ```{r}
-coefs(sem_prev_amp)
+b <- coefs(sem_prev_amp)
+knitr::kable(b, digits = 4)
+
 ```
 
 
@@ -146,15 +167,15 @@ sem_prev_lac <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
     lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -179,11 +200,16 @@ summary(sem_prev_lac)
 ```
 
 
+Passes global fit.  
+
+Lacuna abundance is significant and positive predictor of prevalence.  
+
+Coefficient table:  
 ```{r}
-coefs(sem_prev_lac)
+c <- coefs(sem_prev_lac)
+knitr::kable(c, digits = 4)
+
 ```
-
-
 
 ## Prev + Ido
 ```{r prev4}
@@ -192,15 +218,15 @@ sem_prev_ido <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
     lmer(BladeAreaLog ~ Idoteid + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -224,8 +250,17 @@ summary(sem_prev_ido)
 
 ```
 
+
+
+Passes global fit.  
+
+Idoteid abundance is not significant predictor of prevalence.  
+
+Coefficient table:  
 ```{r}
-coefs(sem_prev_ido)
+d <- coefs(sem_prev_ido)
+knitr::kable(d, digits = 4)
+
 ```
 
 ## Prev + Rich
@@ -236,15 +271,15 @@ sem_prev_rich <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=dis_large),
+       data=site_large),
     lmer(BladeAreaLog ~ Richness + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -268,8 +303,16 @@ summary(sem_prev_rich)
 
 ```
 
+
+Passes global fit.  
+
+Epifauna richness is not significant predictor of prevalence.  
+
+Coefficient table:  
 ```{r}
-coefs(sem_prev_rich)
+e <- coefs(sem_prev_rich)
+knitr::kable(e, digits = 4)
+
 ```
 
 
@@ -279,6 +322,8 @@ coefs(sem_prev_rich)
 les_large <- subset(dis_large, LesionArea>0)
 les_large$LesionAreaLog <- log10(les_large$LesionArea)
 les_large <- na.omit(les_large)
+
+site_les <- distinct(les_large, Meadow_Year, .keep_all = T)
 ```
 
 ```{r les_epi}
@@ -287,15 +332,15 @@ sem_les_epi <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
     lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -316,11 +361,17 @@ sem_les_epi <- psem(
 summary(sem_les_epi)
 ```
 
-Passes global fit test. Epifauna is sig and pos for Lesion Area
-Standardized coefs:
+
+Passes global fit.  
+
+Epifauna abundance is significant and positive predictor of lesion area  
+
+Coefficient table:  
 
 ```{r}
-coefs(sem_les_epi)
+f <- coefs(sem_les_epi)
+knitr::kable(f, digits = 4)
+
 ```
 
 ## Lesion + Amp
@@ -331,26 +382,27 @@ sem_les_amp <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
     lmer(BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
          (1|Region) + (1|Meadow),
        data=les_large),
-  lmer(EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
-          TempAnomWarm_June + MonthlyMeanTemp_June + 
-          TidalHeightBinary + YearBinary + 
-          (1|Region) + (1|Meadow),
-        data=les_large),
-  lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Ampithoid + CanopyHeight + DensityLog + 
+  # lmer(EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
+  #         TempAnomWarm_June + MonthlyMeanTemp_June + 
+  #         TidalHeightBinary + YearBinary + 
+  #         (1|Region) + (1|Meadow),
+  #       data=les_large),
+  lmer(LesionAreaLog ~ BladeAreaLog + #EpiphyteLog + 
+         Ampithoid + CanopyHeight + DensityLog + 
           TempAnomWarm_June + MonthlyMeanTemp_June + 
           TidalHeightBinary + YearBinary + 
           (1|Region) + (1|Meadow),
@@ -361,10 +413,17 @@ summary(sem_les_amp)
 ```
 
 
-Standardized coefs:
+
+Passes global fit.  
+
+Ampithoid abundance is not significant predictor of lesion area (but negative pattern).    
+
+Coefficient table:  
 
 ```{r}
-coefs(sem_les_amp)
+g <- coefs(sem_les_amp)
+knitr::kable(g, digits = 4)
+
 ```
 
 ## Lesion + Lac
@@ -375,15 +434,15 @@ sem_les_lac <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
     lmer(BladeAreaLog ~ Lacuna + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -406,9 +465,16 @@ summary(sem_les_lac)
 
 
 
+Passes global fit.  
+
+Lacuna abundance is significant and positive predictor of leison area.    
+
+Coefficient table:  
 
 ```{r}
-coefs(sem_les_lac)
+h <- coefs(sem_les_lac)
+knitr::kable(h, digits = 4)
+
 ```
 
 ## Lesion + Ido
@@ -419,15 +485,15 @@ sem_les_ido <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
     lmer(BladeAreaLog ~ Idoteid + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -449,9 +515,16 @@ summary(sem_les_ido)
 ```
 
 
+Passes global fit.  
+
+Idoteid abundance is significant and positive predictor of lesion area.    
+
+Coefficient table:  
 
 ```{r}
-coefs(sem_les_ido)
+i <- coefs(sem_les_ido)
+knitr::kable(i, digits = 4)
+
 ```
 
 ## Lesion + Rich
@@ -462,15 +535,15 @@ sem_les_rich <- psem(
          CanopyHeight + DensityLog +
          YearBinary +
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
          YearBinary + 
          (1|Meadow) + (1|Region),
-       data=les_large),
+       data=site_les),
     lmer(BladeAreaLog ~ Richness + CanopyHeight + DensityLog + 
          TempAnomWarm_June + MonthlyMeanTemp_June +
          TidalHeightBinary + YearBinary +
@@ -491,11 +564,17 @@ sem_les_rich <- psem(
 summary(sem_les_rich)
 ```
 
-Passes global fit test. Epifauna is sig and pos for Lesion Area
-Standardized coefs:
+
+Passes global fit.  
+
+Epifauna richness is not significant predictor of lesion area.    
+
+Coefficient table:  
 
 ```{r}
-coefs(sem_les_rich)
+j <- coefs(sem_les_rich)
+knitr::kable(j, digits = 4)
+
 ```
 
 ## Partial coefficients
@@ -591,3 +670,4 @@ plot(predictorEffect("Richness", les_rich_1, partial.residuals=T, type="rescale"
 # plot(ggpredict(les_rich_1, terms = "Richness"), rawdata = TRUE, labels = scales::log10_trans())
 
 ```
+
