@@ -1359,11 +1359,11 @@ sem_les_amp <- psem(
          TidalHeightBinary + YearBinary +
          (1|Region) + (1|Meadow),
        data=les_large),
-  # lmer(EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
-  #         TempAnomWarm_June + MonthlyMeanTemp_June + 
-  #         TidalHeightBinary + YearBinary + 
-  #         (1|Region) + (1|Meadow),
-  #       data=les_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog +
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary +
+          (1|Region) + (1|Meadow),
+        data=les_large),
   lmer(LesionAreaLog ~ BladeAreaLog + #EpiphyteLog + 
          Ampithoid + CanopyHeight + DensityLog + 
           TempAnomWarm_June + MonthlyMeanTemp_June + 
@@ -1375,7 +1375,7 @@ sem_les_amp <- psem(
 summary(sem_les_amp)
 ```
 
-    ##   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
+    ##   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
 
     ## 
     ## Structural Equation Model of sem_les_amp 
@@ -1385,11 +1385,12 @@ summary(sem_les_amp)
     ##   CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + YearBinary
     ##   DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June + YearBinary
     ##   BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
+    ##   EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   LesionAreaLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
     ##     AIC      BIC
-    ##  98.398   179.413
+    ##  123.904   226.054
     ## 
     ## ---
     ## Tests of directed separation:
@@ -1398,10 +1399,11 @@ summary(sem_les_amp)
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 566.3929     0.8091  0.3688 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 566.4446     1.5459  0.2143 
     ##      Ampithoid ~ TidalHeightBinary + ...      coef 564.1430     0.4217  0.5163 
+    ##        LesionAreaLog ~ EpiphyteLog + ...      coef 480.2029     0.5202  0.4711 
     ## 
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 6.398 with P-value = 0.38 and on 6 degrees of freedom
+    ##   Fisher's C = 7.904 with P-value = 0.443 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -1425,6 +1427,14 @@ summary(sem_les_amp)
     ##    BladeAreaLog MonthlyMeanTemp_June  -0.0457    0.0153  10.7710     8.1105
     ##    BladeAreaLog    TidalHeightBinary  -0.2100    0.0171 576.6453   150.7860
     ##    BladeAreaLog           YearBinary   0.0946     0.025 357.5157    13.4409
+    ##     EpiphyteLog         BladeAreaLog  -0.2443    0.0789 576.7283     9.5661
+    ##     EpiphyteLog            Ampithoid  -0.2241    0.1473  52.6058     2.2065
+    ##     EpiphyteLog         CanopyHeight  -0.4733    0.2019 221.9329     5.2668
+    ##     EpiphyteLog           DensityLog  -0.3403    0.1614 148.6749     4.1370
+    ##     EpiphyteLog    TempAnomWarm_June   0.0071    0.0061 102.2635     1.2215
+    ##     EpiphyteLog MonthlyMeanTemp_June  -0.2423    0.0707  53.0657     9.8797
+    ##     EpiphyteLog    TidalHeightBinary  -0.0571    0.0363 569.6603     2.4646
+    ##     EpiphyteLog           YearBinary  -0.0197    0.0529 477.8697     0.1355
     ##   LesionAreaLog         BladeAreaLog   0.5075    0.1282 585.8371    15.5390
     ##   LesionAreaLog            Ampithoid  -0.2776    0.1648  47.1961     2.6247
     ##   LesionAreaLog         CanopyHeight   0.1613    0.2731 157.9981     0.3188
@@ -1453,6 +1463,14 @@ summary(sem_les_amp)
     ##    0.0162      -0.1824   *
     ##    0.0000      -0.2746 ***
     ##    0.0003       0.1218 ***
+    ##    0.0021      -0.1074  **
+    ##    0.1434      -0.1133    
+    ##    0.0227      -0.1725   *
+    ##    0.0437      -0.1866   *
+    ##    0.2717       0.0684    
+    ##    0.0027      -0.4251  **
+    ##    0.1170      -0.0328    
+    ##    0.7130      -0.0111    
     ##    0.0001       0.2723 ***
     ##    0.1119      -0.1713    
     ##    0.5731       0.0717    
@@ -1473,6 +1491,7 @@ summary(sem_les_amp)
     ##    CanopyHeight   none     0.17        0.89
     ##      DensityLog   none     0.08        0.94
     ##    BladeAreaLog   none     0.64        0.72
+    ##     EpiphyteLog   none     0.17        0.87
     ##   LesionAreaLog   none     0.12        0.48
 
 Passes global fit.
@@ -1507,6 +1526,14 @@ knitr::kable(g, digits = 4)
 | BladeAreaLog   | MonthlyMeanTemp_June |  -0.0457 | 0.0153    |  10.7710 |     8.1105 |  0.0162 |      -0.1824 | \*     |
 | BladeAreaLog   | TidalHeightBinary    |  -0.2100 | 0.0171    | 576.6453 |   150.7860 |  0.0000 |      -0.2746 | \*\*\* |
 | BladeAreaLog   | YearBinary           |   0.0946 | 0.025     | 357.5157 |    13.4409 |  0.0003 |       0.1218 | \*\*\* |
+| EpiphyteLog    | BladeAreaLog         |  -0.2443 | 0.0789    | 576.7283 |     9.5661 |  0.0021 |      -0.1074 | \*\*   |
+| EpiphyteLog    | Ampithoid            |  -0.2241 | 0.1473    |  52.6058 |     2.2065 |  0.1434 |      -0.1133 |        |
+| EpiphyteLog    | CanopyHeight         |  -0.4733 | 0.2019    | 221.9329 |     5.2668 |  0.0227 |      -0.1725 | \*     |
+| EpiphyteLog    | DensityLog           |  -0.3403 | 0.1614    | 148.6749 |     4.1370 |  0.0437 |      -0.1866 | \*     |
+| EpiphyteLog    | TempAnomWarm_June    |   0.0071 | 0.0061    | 102.2635 |     1.2215 |  0.2717 |       0.0684 |        |
+| EpiphyteLog    | MonthlyMeanTemp_June |  -0.2423 | 0.0707    |  53.0657 |     9.8797 |  0.0027 |      -0.4251 | \*\*   |
+| EpiphyteLog    | TidalHeightBinary    |  -0.0571 | 0.0363    | 569.6603 |     2.4646 |  0.1170 |      -0.0328 |        |
+| EpiphyteLog    | YearBinary           |  -0.0197 | 0.0529    | 477.8697 |     0.1355 |  0.7130 |      -0.0111 |        |
 | LesionAreaLog  | BladeAreaLog         |   0.5075 | 0.1282    | 585.8371 |    15.5390 |  0.0001 |       0.2723 | \*\*\* |
 | LesionAreaLog  | Ampithoid            |  -0.2776 | 0.1648    |  47.1961 |     2.6247 |  0.1119 |      -0.1713 |        |
 | LesionAreaLog  | CanopyHeight         |   0.1613 | 0.2731    | 157.9981 |     0.3188 |  0.5731 |       0.0717 |        |

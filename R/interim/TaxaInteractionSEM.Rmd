@@ -396,11 +396,11 @@ sem_les_amp <- psem(
          TidalHeightBinary + YearBinary +
          (1|Region) + (1|Meadow),
        data=les_large),
-  # lmer(EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + 
-  #         TempAnomWarm_June + MonthlyMeanTemp_June + 
-  #         TidalHeightBinary + YearBinary + 
-  #         (1|Region) + (1|Meadow),
-  #       data=les_large),
+  lmer(EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog +
+          TempAnomWarm_June + MonthlyMeanTemp_June +
+          TidalHeightBinary + YearBinary +
+          (1|Region) + (1|Meadow),
+        data=les_large),
   lmer(LesionAreaLog ~ BladeAreaLog + #EpiphyteLog + 
          Ampithoid + CanopyHeight + DensityLog + 
           TempAnomWarm_June + MonthlyMeanTemp_June + 
