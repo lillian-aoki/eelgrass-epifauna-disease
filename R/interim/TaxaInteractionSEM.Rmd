@@ -577,6 +577,59 @@ knitr::kable(j, digits = 4)
 
 ```
 
+### Les + Lac + Amp + Ido
+
+What about running all three abundance predictors in the same model? If it converges, then it is better for comparing partials? Tells you what happens with one taxa in the presence of the other. Nope decided not to do this
+
+
+```{r}
+# sem_les_taxa <- psem(
+#   lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog +
+#          YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#   lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog +
+#          YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#   lmer(Idoteid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog +
+#          YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#     lmer(BladeAreaLog ~ Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
+#          TempAnomWarm_June + MonthlyMeanTemp_June +
+#          TidalHeightBinary + YearBinary +
+#          (1|Region) + (1|Meadow),
+#        data=les_large),
+#   lmer(EpiphyteLog ~ BladeAreaLog + Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=les_large),
+#   lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=les_large),
+#   DensityLog%~~%CanopyHeight,
+#   Ampithoid%~~%Lacuna, 
+#   Ampithoid%~~%Idoteid
+# )
+# summary(sem_les_taxa)
+```
+
+
 ## Partial coefficients
 
 ### prevalence

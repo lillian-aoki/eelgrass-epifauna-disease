@@ -2143,6 +2143,60 @@ knitr::kable(j, digits = 4)
 | LesionAreaLog  | YearBinary           |   0.0080 | 0.069     | 449.2039 |     0.0133 |  0.9082 |       0.0056 |        |
 | \~\~DensityLog | \~\~CanopyHeight     |  -0.0209 | \-        |  43.0000 |    -0.1325 |  0.4476 |      -0.0209 |        |
 
+### Les + Lac + Amp + Ido
+
+What about running all three abundance predictors in the same model? If
+it converges, then it is better for comparing partials? Tells you what
+happens with one taxa in the presence of the other. Nope decided not to
+do this
+
+``` r
+# sem_les_taxa <- psem(
+#   lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog +
+#          YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#   lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog +
+#          YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#   lmer(Idoteid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog +
+#          YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=site_les),
+#     lmer(BladeAreaLog ~ Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
+#          TempAnomWarm_June + MonthlyMeanTemp_June +
+#          TidalHeightBinary + YearBinary +
+#          (1|Region) + (1|Meadow),
+#        data=les_large),
+#   lmer(EpiphyteLog ~ BladeAreaLog + Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=les_large),
+#   lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=les_large),
+#   DensityLog%~~%CanopyHeight,
+#   Ampithoid%~~%Lacuna, 
+#   Ampithoid%~~%Idoteid
+# )
+# summary(sem_les_taxa)
+```
+
 ## Partial coefficients
 
 ### prevalence
@@ -2157,7 +2211,7 @@ prev_epi_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Epifauna + CanopyH
 plot(predictorEffect("Epifauna", prev_epi_1, partial.residuals=T))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
 # will want to try and get the year/site means plotted onto this plot, but can hold off for now?
@@ -2176,7 +2230,7 @@ prev_lac_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Lacuna + CanopyHei
 plot(predictorEffect("Lacuna", prev_lac_1, partial.residuals=T))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
 
 ``` r
 prev_amp_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Ampithoid + CanopyHeight + DensityLog + 
@@ -2194,7 +2248,7 @@ prev_amp_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Ampithoid + Canopy
 plot(predictorEffect("Ampithoid", prev_amp_1,partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-11-3.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-3.png)<!-- -->
 
 ``` r
 prev_ido_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Idoteid + CanopyHeight + DensityLog + 
@@ -2212,7 +2266,7 @@ prev_ido_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Idoteid + CanopyHe
 plot(predictorEffect("Idoteid", prev_ido_1,partial.residuals=T))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-11-4.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-4.png)<!-- -->
 
 ``` r
 prev_rich_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Richness + CanopyHeight + DensityLog + 
@@ -2224,7 +2278,7 @@ prev_rich_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + Richness + Canopy
 plot(predictorEffect("Richness", prev_rich_1,partial.residuals=TRUE, main="type='link'"))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-11-5.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-5.png)<!-- -->
 
 ### lesion
 
@@ -2237,7 +2291,7 @@ les_epi_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Epifauna + Canopy
 plot(predictorEffect("Epifauna", les_epi_1, partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
 les_lac_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Lacuna + CanopyHeight + DensityLog + 
@@ -2248,7 +2302,7 @@ les_lac_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Lacuna + CanopyHe
 plot(predictorEffect("Lacuna", les_lac_1, partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
 
 ``` r
 les_amp_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Ampithoid + CanopyHeight + DensityLog + 
@@ -2259,7 +2313,7 @@ les_amp_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Ampithoid + Canop
 plot(predictorEffect("Ampithoid", les_amp_1, partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-3.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-13-3.png)<!-- -->
 
 ``` r
 les_ido_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Idoteid + CanopyHeight + DensityLog + 
@@ -2270,7 +2324,7 @@ les_ido_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Idoteid + CanopyH
 plot(predictorEffect("Idoteid", les_ido_1, partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-4.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-13-4.png)<!-- -->
 
 ``` r
 les_rich_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Richness + CanopyHeight + DensityLog + 
@@ -2281,7 +2335,7 @@ les_rich_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Richness + Canop
 plot(predictorEffect("Richness", les_rich_1, partial.residuals=T, type="rescale"))
 ```
 
-![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-12-5.png)<!-- -->
+![](TaxaInteractionSEM_files/figure-gfm/unnamed-chunk-13-5.png)<!-- -->
 
 ``` r
 # plot(ggpredict(les_rich_1, terms = "Richness"), rawdata = TRUE, labels = scales::log10_trans())
