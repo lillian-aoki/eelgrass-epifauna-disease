@@ -19,6 +19,7 @@ library(performance)
 library(piecewiseSEM)
 library(effects)
 library(ggeffects)
+library(kableExtra)
 ```
 
 # SEMs comparing epifauna vs lacuna vs ampithoid vs iodteid vs richness
@@ -104,8 +105,53 @@ Coefficient table:
 
 ```{r}
 a <- coefs(sem_prev_epi)
-knitr::kable(a, digits = 4)
+kable(a, digits = 4, caption = "Coefficients from Total Epifauna-Prevalence SEM") 
+
+# kable(dat4, booktabs = TRUE, caption = "Injuries before and after June 15, all sports-related, non-minor", linesep="") %>%
+#   kable_styling(latex_options = c("HOLD_position"))
 ```
+
+An alternative SEM - flip the prevalence to epifauna arrow? Not sure this will work because of different scales
+
+```{r eval=FALSE}
+# sem_prev_epi2 <- psem(
+#   lmer(Epifauna ~ Prevalence + TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          CanopyHeight + DensityLog +
+#          YearBinary +
+#          (1|Meadow) + (1|Region),
+#        data=dis_large),
+#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=site_large),
+#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
+#          YearBinary + 
+#          (1|Meadow) + (1|Region),
+#        data=site_large),
+#     lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
+#          TempAnomWarm_June + MonthlyMeanTemp_June +
+#          TidalHeightBinary + YearBinary +
+#          (1|Region) + (1|Meadow),
+#        data=dis_large),
+#   lmer(EpiphyteLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
+#          TempAnomWarm_June + MonthlyMeanTemp_June +
+#          TidalHeightBinary + YearBinary +
+#          (1|Region) + (1|Meadow),
+#        data=dis_large),
+#   glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + 
+#           CanopyHeight + DensityLog + 
+#           TempAnomWarm_June + MonthlyMeanTemp_June + 
+#           TidalHeightBinary + YearBinary + 
+#           (1|Region) + (1|Meadow),
+#         data=dis_large,
+#         family = "binomial"),
+#   DensityLog%~~%CanopyHeight
+# )
+# summary(sem_prev_epi2)
+
+```
+
+This doesn't really make sense - because the scale changes when the arrow is reversed, which makes all the paths change.  
 
 ## Prev + Amp
 ```{r prev2}
@@ -154,7 +200,7 @@ Ampithoid abundance is not significant predictor of prevalence.
 Coefficient table:  
 ```{r}
 b <- coefs(sem_prev_amp)
-knitr::kable(b, digits = 4)
+knitr::kable(b, digits = 4, caption = "Coefficients from Ampithoid-Prevalence SEM") 
 
 ```
 
@@ -207,7 +253,7 @@ Lacuna abundance is significant and positive predictor of prevalence.
 Coefficient table:  
 ```{r}
 c <- coefs(sem_prev_lac)
-knitr::kable(c, digits = 4)
+knitr::kable(c, digits = 4, caption = "Coefficients from Lacuna-Prevalence SEM") 
 
 ```
 
@@ -259,7 +305,7 @@ Idoteid abundance is not significant predictor of prevalence.
 Coefficient table:  
 ```{r}
 d <- coefs(sem_prev_ido)
-knitr::kable(d, digits = 4)
+knitr::kable(d, digits = 4, caption = "Coefficients from Idoteid-Prevalence SEM")
 
 ```
 
@@ -311,7 +357,7 @@ Epifauna richness is not significant predictor of prevalence.
 Coefficient table:  
 ```{r}
 e <- coefs(sem_prev_rich)
-knitr::kable(e, digits = 4)
+knitr::kable(e, digits = 4, caption = "Coefficients from Richness-Prevalence SEM")
 
 ```
 
@@ -370,7 +416,7 @@ Coefficient table:
 
 ```{r}
 f <- coefs(sem_les_epi)
-knitr::kable(f, digits = 4)
+knitr::kable(f, digits = 4, caption = "Coefficients from Total Epifauna-Lesion Area SEM")
 
 ```
 
@@ -422,7 +468,7 @@ Coefficient table:
 
 ```{r}
 g <- coefs(sem_les_amp)
-knitr::kable(g, digits = 4)
+knitr::kable(g, digits = 4, caption = "Coefficients from Ampithoid-Lesion Area SEM") 
 
 ```
 
@@ -473,7 +519,7 @@ Coefficient table:
 
 ```{r}
 h <- coefs(sem_les_lac)
-knitr::kable(h, digits = 4)
+knitr::kable(h, digits = 4, caption = "Coefficients from Lacuna-Lesion Area SEM")
 
 ```
 
@@ -523,7 +569,7 @@ Coefficient table:
 
 ```{r}
 i <- coefs(sem_les_ido)
-knitr::kable(i, digits = 4)
+knitr::kable(i, digits = 4, caption = "Coefficients from Idoteid-Lesion Area SEM")
 
 ```
 
@@ -573,7 +619,7 @@ Coefficient table:
 
 ```{r}
 j <- coefs(sem_les_rich)
-knitr::kable(j, digits = 4)
+knitr::kable(j, digits = 4, caption = "Coeffiecients from Richness-Lesion Area SEM")
 
 ```
 
@@ -582,7 +628,7 @@ knitr::kable(j, digits = 4)
 What about running all three abundance predictors in the same model? If it converges, then it is better for comparing partials? Tells you what happens with one taxa in the presence of the other. Nope decided not to do this
 
 
-```{r}
+```{r eval=FALSE}
 # sem_les_taxa <- psem(
 #   lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
 #          CanopyHeight + DensityLog +
