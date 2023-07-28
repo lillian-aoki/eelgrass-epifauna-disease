@@ -21,6 +21,7 @@ library(performance)
 library(effects)
 library(sjPlot)
 library(ggeffects)
+library(knitr)
 ```
 
 ## GLM and LM to assess taxa effects on disease
@@ -42,7 +43,7 @@ Compare 3 models: epifauna predictors and seagrass predictors (blade area and de
 ```{r cars}
 prev1 <- glmer(Prevalence ~ BladeAreaLog + 
                 Ampithoid_large + Lacuna_large + Idoteid_large +
-                DensityLog + 
+                DensityLog + CanopyHeight +
                 fYear +(1|Region) +(1|Meadow), 
               family = "binomial", 
               data=all_epi)
@@ -56,12 +57,31 @@ prev2 <- glmer(Prevalence ~ BladeAreaLog +
 
 prev3 <- glmer(Prevalence ~ 
         Ampithoid_large + Lacuna_large + Idoteid_large +
+          DensityLog + CanopyHeight +
 
         fYear +(1|Region) +(1|Meadow), 
       family = "binomial", 
       data=all_epi)
 
-AIC(prev1, prev2, prev3)
+prev4 <- glmer(Prevalence ~ BladeAreaLog + 
+                DensityLog + CanopyHeight +
+        fYear +(1|Region) +(1|Meadow), 
+      family = "binomial", 
+      data=all_epi)
+
+AIC(prev1, prev2, prev3, prev4)
+
+
+df.AIC <- AIC(prev1, prev2, prev3, prev4)
+df.AIC$deltaAIC <- df.AIC$AIC-min(df.AIC$AIC)
+df.AIC$likelihood <- exp(-df.AIC$deltaAIC/2)
+df.AIC$weight <- format(df.AIC$likelihood/sum(df.AIC$likelihood), scientific = FALSE)
+df.AIC$predictors <- c("Full model (individual leaf area, all taxa abundances, seagrass structure)", 
+                  "Drop seagrass structure from full model",
+                  "Drop individual leaf area from full model", 
+                  "Drop taxa abundances from full model") 
+df.AIC
+kable(df.AIC, digits=4, caption = "Model comparison for prevalence")
 ```
 
 By AIC, the model including epifauna taxa, blade area, and density is better than alternatives
@@ -74,7 +94,7 @@ plot(prev1_E)
 
 Look at model results
 ```{r prev_model}
-plot_model(prev1, type="std", show.p=T, show.values=T)
+plot_model(prev1, type="std", show.p=T, show.values=T, title = "",value.offset = 0.5)
 plot(predictorEffects(prev1, partial.residuals=T))
 plot(predictorEffects(prev1))
 plot(predictorEffect("Ampithoid_large", prev1, partial.residuals=T))
@@ -90,7 +110,8 @@ Compare same three models, but these are linear (using log transformed lesion ar
 ```{r}
 les1 <- lmer(LesionAreaLog ~ BladeAreaLog +
                Ampithoid_large + Lacuna_large + Idoteid_large +
-               DensityLog + fYear + (1|Meadow) + (1|Region), 
+               DensityLog + CanopyHeight + 
+               fYear + (1|Meadow) + (1|Region), 
              data=les)
 
 les2 <- lmer(LesionAreaLog ~ BladeAreaLog +
@@ -100,10 +121,25 @@ les2 <- lmer(LesionAreaLog ~ BladeAreaLog +
 
 les3 <- lmer(LesionAreaLog ~ 
                Ampithoid_large + Lacuna_large + Idoteid_large +
+               DensityLog + CanopyHeight + 
                fYear + (1|Meadow) + (1|Region), 
              data=les)
+les4 <- lmer(LesionAreaLog ~ BladeAreaLog +
+               DensityLog + CanopyHeight + 
+               fYear + (1|Meadow) + (1|Region), 
+             data=les)
+AIC(les1, les2, les3, les4)
 
-AIC(les1, les2, les3)
+
+df.AIC <- AIC(les1, les2, les3, les4)
+df.AIC$deltaAIC <- df.AIC$AIC-min(df.AIC$AIC)
+df.AIC$likelihood <- exp(-df.AIC$deltaAIC/2)
+df.AIC$weight <- df.AIC$likelihood/sum(df.AIC$likelihood)
+df.AIC$predictors <- c("Full model (individual leaf area, all taxa abundances, seagrass structure)", 
+                  "Drop seagrass structure from full model",
+                  "Drop individual leaf area from full model", 
+                  "Drop taxa abundances from full model")
+kable(df.AIC, digits = 4, caption = "Model comparison for lesion area")
 ```
 
 Dropping shoot density improves the model somewhat. Use second model.
