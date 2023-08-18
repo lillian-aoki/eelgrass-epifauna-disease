@@ -107,9 +107,9 @@ write_csv(sg_temps_epi_gz_meta, "data/full_seagrass_epifauna_for_SEM.csv")
 
 # Blade level
 # Same idea, but now pulling blade-level processing - to combine with some transect level markers
-blade <- read_csv("data/meter_level_shoot_metrics_with_disease.csv")
-blade$GrazingScars <- ifelse(blade$GrazingScars==0, 0, 1)
-write_csv(blade, "data/blade_data_for_SEM.csv")
+# blade <- read_csv("data/meter_level_shoot_metrics_with_disease.csv")
+# blade$GrazingScars <- ifelse(blade$GrazingScars==0, 0, 1)
+# write_csv(blade, "data/blade_data_for_SEM.csv")
 # the above is for the 5 epiphyte blades only. We've decided to include additional blades from 2021 (but not 2020?)
 dis <- read_csv("data/meter_level_disease_metrics.csv")
 all_dis <- left_join(dis, gz)

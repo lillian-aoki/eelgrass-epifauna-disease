@@ -45,12 +45,51 @@ dis1_large <- select(dis, c(Epifauna = Epifauna_large, TempAnomWarm_June, Monthl
                       DensityLog, YearBinary, Year, Meadow, Region, Transect, Blade, BladeAreaLog, TidalHeightBinary, GrazingScars,
                       Prevalence, LesionArea, EpiphyteLog, Lacuna = Lacuna_large, 
                       Ampithoid = Ampithoid_large, Idoteid = Idoteid_large, Richness = Richness_large))
+# reminder, binary variables are set to 0 and 1 and modeled as numeric for piecewise SEM!
+dis1_large$Meadow_Year <- paste(dis1_large$Meadow, dis1_large$Year, sep = "_")
 dis_large <- na.omit(dis1_large)
-dis_large$Meadow_Year <- paste(dis_large$Meadow, dis_large$Year, sep = "_")
 site_large <- distinct(dis_large, Meadow_Year, .keep_all = T)
 site_large <- select(site_large, -c(Prevalence, LesionArea, EpiphyteLog, TidalHeightBinary, BladeAreaLog))
 # site <- read_csv("data/epifauna_site_for_plotting.csv")
 # site <- select(site, c())
+print("meadow-year combos in prevalence SEM")
+```
+
+    ## [1] "meadow-year combos in prevalence SEM"
+
+``` r
+length(unique(dis_large$Meadow_Year))
+```
+
+    ## [1] 44
+
+``` r
+unique(dis_large$Meadow_Year)
+```
+
+    ##  [1] "AK_A_2019" "AK_B_2019" "AK_C_2019" "AK_D_2019" "AK_E_2019" "AK_F_2019"
+    ##  [7] "BC_A_2019" "BC_B_2019" "BC_C_2019" "BC_D_2019" "BC_E_2019" "WA_A_2019"
+    ## [13] "WA_B_2019" "WA_C_2019" "WA_D_2019" "WA_E_2019" "OR_B_2019" "OR_C_2019"
+    ## [19] "OR_D_2019" "OR_E_2019" "BB_A_2019" "BB_C_2019" "BB_D_2019" "BB_E_2019"
+    ## [25] "AK_A_2021" "AK_B_2021" "AK_C_2021" "AK_D_2021" "AK_E_2021" "AK_F_2021"
+    ## [31] "BC_A_2021" "BC_C_2021" "BC_E_2021" "BC_B_2021" "BC_D_2021" "WA_A_2021"
+    ## [37] "WA_B_2021" "WA_D_2021" "WA_E_2021" "OR_C_2021" "OR_D_2021" "OR_E_2021"
+    ## [43] "SD_A_2021" "SD_D_2021"
+
+``` r
+print("nrows of disease data (sample size)")
+```
+
+    ## [1] "nrows of disease data (sample size)"
+
+``` r
+nrow(dis_large)
+```
+
+    ## [1] 1307
+
+``` r
+# unique(dis1_large$Meadow_Year)
 ```
 
 ## Prevalence + Epifauna
@@ -1585,49 +1624,6 @@ DensityLog
 # kable(dat4, booktabs = TRUE, caption = "Injuries before and after June 15, all sports-related, non-minor", linesep="") %>%
 #   kable_styling(latex_options = c("HOLD_position"))
 ```
-
-An alternative SEM - flip the prevalence to epifauna arrow? Not sure
-this will work because of different scales
-
-``` r
-# sem_prev_epi2 <- psem(
-#   lmer(Epifauna ~ Prevalence + TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          CanopyHeight + DensityLog +
-#          YearBinary +
-#          (1|Meadow) + (1|Region),
-#        data=dis_large),
-#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          YearBinary + 
-#          (1|Meadow) + (1|Region),
-#        data=site_large),
-#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
-#          YearBinary + 
-#          (1|Meadow) + (1|Region),
-#        data=site_large),
-#     lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
-#          TempAnomWarm_June + MonthlyMeanTemp_June +
-#          TidalHeightBinary + YearBinary +
-#          (1|Region) + (1|Meadow),
-#        data=dis_large),
-#   lmer(EpiphyteLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
-#          TempAnomWarm_June + MonthlyMeanTemp_June +
-#          TidalHeightBinary + YearBinary +
-#          (1|Region) + (1|Meadow),
-#        data=dis_large),
-#   glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + 
-#           CanopyHeight + DensityLog + 
-#           TempAnomWarm_June + MonthlyMeanTemp_June + 
-#           TidalHeightBinary + YearBinary + 
-#           (1|Region) + (1|Meadow),
-#         data=dis_large,
-#         family = "binomial"),
-#   DensityLog%~~%CanopyHeight
-# )
-# summary(sem_prev_epi2)
-```
-
-This doesn’t really make sense - because the scale changes when the
-arrow is reversed, which makes all the paths change.
 
 ## Prev + Amp
 
@@ -7746,7 +7742,16 @@ les_large$LesionAreaLog <- log10(les_large$LesionArea)
 les_large <- na.omit(les_large)
 
 site_les <- distinct(les_large, Meadow_Year, .keep_all = T)
+print("sample size for lesion models")
 ```
+
+    ## [1] "sample size for lesion models"
+
+``` r
+nrow(les_large)
+```
+
+    ## [1] 572
 
 ``` r
 sem_les_epi <- psem(
@@ -9299,7 +9304,7 @@ sem_les_amp <- psem(
           (1|Region) + (1|Meadow),
         data=les_large,
         family = "binomial"),
-  lmer(LesionAreaLog ~ BladeAreaLog + GrazingScars + #EpiphyteLog + 
+  lmer(LesionAreaLog ~ BladeAreaLog + GrazingScars + EpiphyteLog + 
          Ampithoid + CanopyHeight + DensityLog + 
           TempAnomWarm_June + MonthlyMeanTemp_June + 
           TidalHeightBinary + YearBinary + 
@@ -9316,7 +9321,7 @@ sem_les_amp <- psem(
 summary(sem_les_amp)
 ```
 
-    ##   |                                                                              |                                                                      |   0%  |                                                                              |==============                                                        |  20%  |                                                                              |============================                                          |  40%  |                                                                              |==========================================                            |  60%  |                                                                              |========================================================              |  80%  |                                                                              |======================================================================| 100%
+    ##   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
 
     ## 
     ## Structural Equation Model of sem_les_amp 
@@ -9328,11 +9333,11 @@ summary(sem_les_amp)
     ##   BladeAreaLog ~ Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   EpiphyteLog ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   GrazingScars ~ BladeAreaLog + Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
-    ##   LesionAreaLog ~ BladeAreaLog + GrazingScars + Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
+    ##   LesionAreaLog ~ BladeAreaLog + GrazingScars + EpiphyteLog + Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
     ##     AIC      BIC
-    ##  147.488   269.125
+    ##  148.462   271.837
     ## 
     ## ---
     ## Tests of directed separation:
@@ -9342,11 +9347,10 @@ summary(sem_les_amp)
     ##     DensityLog ~ TidalHeightBinary + ...      coef 542.4390     1.5162  0.2187 
     ##      Ampithoid ~ TidalHeightBinary + ...      coef 540.1367     0.3778  0.5390 
     ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000    -0.0753  0.9400 
-    ##        LesionAreaLog ~ EpiphyteLog + ...      coef 416.1620     0.2771  0.5989 
     ## 
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 7.488 with P-value = 0.679 and on 10 degrees of freedom
+    ##   Fisher's C = 6.462 with P-value = 0.596 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -9386,15 +9390,16 @@ summary(sem_les_amp)
     ##    GrazingScars MonthlyMeanTemp_June   0.6819    0.1949 572.0000     3.4986
     ##    GrazingScars    TidalHeightBinary   0.0825    0.2235 572.0000     0.3692
     ##    GrazingScars           YearBinary  -1.4935    0.3128 572.0000    -4.7747
-    ##   LesionAreaLog         BladeAreaLog   0.4658    0.1286 559.6492    13.0093
-    ##   LesionAreaLog         GrazingScars   0.1633    0.0607 560.0627     7.1746
-    ##   LesionAreaLog            Ampithoid  -0.3161    0.1761  49.2638     2.8759
-    ##   LesionAreaLog         CanopyHeight   0.1496     0.269 156.5537     0.2803
-    ##   LesionAreaLog           DensityLog  -0.1313    0.1916  57.9855     0.3955
-    ##   LesionAreaLog    TempAnomWarm_June  -0.0082    0.0069  47.1831     1.2414
-    ##   LesionAreaLog MonthlyMeanTemp_June   0.1216     0.064  10.8475     3.0732
-    ##   LesionAreaLog    TidalHeightBinary  -0.0070    0.0597 554.3627     0.0137
-    ##   LesionAreaLog           YearBinary  -0.0390    0.0811 404.5175     0.2213
+    ##   LesionAreaLog         BladeAreaLog   0.4734    0.1294 559.2029    13.2636
+    ##   LesionAreaLog         GrazingScars   0.1626    0.0607 559.4369     7.1031
+    ##   LesionAreaLog          EpiphyteLog   0.0349    0.0643 416.1620     0.2771
+    ##   LesionAreaLog            Ampithoid  -0.3185    0.1764  48.3802     2.9447
+    ##   LesionAreaLog         CanopyHeight   0.1522    0.2704 156.4459     0.2895
+    ##   LesionAreaLog           DensityLog  -0.1461    0.1945  59.1311     0.4898
+    ##   LesionAreaLog    TempAnomWarm_June  -0.0097    0.0072  47.1869     1.6367
+    ##   LesionAreaLog MonthlyMeanTemp_June   0.1439    0.0691  12.1119     3.6112
+    ##   LesionAreaLog    TidalHeightBinary  -0.0054    0.0598 553.9101     0.0081
+    ##   LesionAreaLog           YearBinary  -0.0416    0.0811 394.2045     0.2533
     ##    ~~DensityLog       ~~CanopyHeight  -0.0157         -  42.0000    -0.0978
     ##   P.Value Std.Estimate    
     ##    0.0108      -0.2509   *
@@ -9431,15 +9436,16 @@ summary(sem_les_amp)
     ##    0.0005            - ***
     ##    0.7120            -    
     ##    0.0000            - ***
-    ##    0.0003       0.2516 ***
-    ##    0.0076       0.1143  **
-    ##    0.0962       -0.199    
-    ##    0.5972       0.0665    
-    ##    0.5319      -0.0896    
-    ##    0.2708      -0.0978    
-    ##    0.1078       0.2672    
-    ##    0.9068      -0.0049    
-    ##    0.6383      -0.0272    
+    ##    0.0003       0.2558 ***
+    ##    0.0079       0.1138  **
+    ##    0.5989       0.0436    
+    ##    0.0926      -0.2005    
+    ##    0.5913       0.0676    
+    ##    0.4867      -0.0997    
+    ##    0.2070      -0.1162    
+    ##    0.0815       0.3163    
+    ##    0.9284      -0.0038    
+    ##    0.6151      -0.0291    
     ##    0.4613      -0.0157    
     ## 
     ##   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05
@@ -9454,7 +9460,7 @@ summary(sem_les_amp)
     ##    BladeAreaLog   none     0.65        0.72
     ##     EpiphyteLog   none     0.17        0.87
     ##    GrazingScars  delta     0.28        0.41
-    ##   LesionAreaLog   none     0.13        0.46
+    ##   LesionAreaLog   none     0.14        0.51
 
 Passes global fit.
 
@@ -10481,22 +10487,22 @@ TempAnomWarm_June
                   BladeAreaLog
                   </td>
                   <td style="text-align:right;">
-                  0.4658
+                  0.4734
                   </td>
                   <td style="text-align:left;">
-                  0.1286
+                  0.1294
                   </td>
                   <td style="text-align:right;">
-                  559.6492
+                  559.2029
                   </td>
                   <td style="text-align:right;">
-                  13.0093
+                  13.2636
                   </td>
                   <td style="text-align:right;">
                   0.0003
                   </td>
                   <td style="text-align:right;">
-                  0.2516
+                  0.2558
                   </td>
                   <td style="text-align:left;">
                   \*\*\*
@@ -10510,22 +10516,22 @@ TempAnomWarm_June
                   GrazingScars
                   </td>
                   <td style="text-align:right;">
-                  0.1633
+                  0.1626
                   </td>
                   <td style="text-align:left;">
                   0.0607
                   </td>
                   <td style="text-align:right;">
-                  560.0627
+                  559.4369
                   </td>
                   <td style="text-align:right;">
-                  7.1746
+                  7.1031
                   </td>
                   <td style="text-align:right;">
-                  0.0076
+                  0.0079
                   </td>
                   <td style="text-align:right;">
-                  0.1143
+                  0.1138
                   </td>
                   <td style="text-align:left;">
                   \*\*
@@ -10536,25 +10542,53 @@ TempAnomWarm_June
                   LesionAreaLog
                   </td>
                   <td style="text-align:left;">
+                  EpiphyteLog
+                  </td>
+                  <td style="text-align:right;">
+                  0.0349
+                  </td>
+                  <td style="text-align:left;">
+                  0.0643
+                  </td>
+                  <td style="text-align:right;">
+                  416.1620
+                  </td>
+                  <td style="text-align:right;">
+                  0.2771
+                  </td>
+                  <td style="text-align:right;">
+                  0.5989
+                  </td>
+                  <td style="text-align:right;">
+                  0.0436
+                  </td>
+                  <td style="text-align:left;">
+                  </td>
+                  </tr>
+                  <tr>
+                  <td style="text-align:left;">
+                  LesionAreaLog
+                  </td>
+                  <td style="text-align:left;">
                   Ampithoid
                   </td>
                   <td style="text-align:right;">
-                  -0.3161
+                  -0.3185
                   </td>
                   <td style="text-align:left;">
-                  0.1761
+                  0.1764
                   </td>
                   <td style="text-align:right;">
-                  49.2638
+                  48.3802
                   </td>
                   <td style="text-align:right;">
-                  2.8759
+                  2.9447
                   </td>
                   <td style="text-align:right;">
-                  0.0962
+                  0.0926
                   </td>
                   <td style="text-align:right;">
-                  -0.1990
+                  -0.2005
                   </td>
                   <td style="text-align:left;">
                   </td>
@@ -10567,22 +10601,22 @@ TempAnomWarm_June
                   CanopyHeight
                   </td>
                   <td style="text-align:right;">
-                  0.1496
+                  0.1522
                   </td>
                   <td style="text-align:left;">
-                  0.269
+                  0.2704
                   </td>
                   <td style="text-align:right;">
-                  156.5537
+                  156.4459
                   </td>
                   <td style="text-align:right;">
-                  0.2803
+                  0.2895
                   </td>
                   <td style="text-align:right;">
-                  0.5972
+                  0.5913
                   </td>
                   <td style="text-align:right;">
-                  0.0665
+                  0.0676
                   </td>
                   <td style="text-align:left;">
                   </td>
@@ -10595,22 +10629,22 @@ TempAnomWarm_June
                   DensityLog
                   </td>
                   <td style="text-align:right;">
-                  -0.1313
+                  -0.1461
                   </td>
                   <td style="text-align:left;">
-                  0.1916
+                  0.1945
                   </td>
                   <td style="text-align:right;">
-                  57.9855
+                  59.1311
                   </td>
                   <td style="text-align:right;">
-                  0.3955
+                  0.4898
                   </td>
                   <td style="text-align:right;">
-                  0.5319
+                  0.4867
                   </td>
                   <td style="text-align:right;">
-                  -0.0896
+                  -0.0997
                   </td>
                   <td style="text-align:left;">
                   </td>
@@ -10623,22 +10657,22 @@ TempAnomWarm_June
                   TempAnomWarm_June
                   </td>
                   <td style="text-align:right;">
-                  -0.0082
+                  -0.0097
                   </td>
                   <td style="text-align:left;">
-                  0.0069
+                  0.0072
                   </td>
                   <td style="text-align:right;">
-                  47.1831
+                  47.1869
                   </td>
                   <td style="text-align:right;">
-                  1.2414
+                  1.6367
                   </td>
                   <td style="text-align:right;">
-                  0.2708
+                  0.2070
                   </td>
                   <td style="text-align:right;">
-                  -0.0978
+                  -0.1162
                   </td>
                   <td style="text-align:left;">
                   </td>
@@ -10651,22 +10685,22 @@ TempAnomWarm_June
                   MonthlyMeanTemp_June
                   </td>
                   <td style="text-align:right;">
-                  0.1216
+                  0.1439
                   </td>
                   <td style="text-align:left;">
-                  0.064
+                  0.0691
                   </td>
                   <td style="text-align:right;">
-                  10.8475
+                  12.1119
                   </td>
                   <td style="text-align:right;">
-                  3.0732
+                  3.6112
                   </td>
                   <td style="text-align:right;">
-                  0.1078
+                  0.0815
                   </td>
                   <td style="text-align:right;">
-                  0.2672
+                  0.3163
                   </td>
                   <td style="text-align:left;">
                   </td>
@@ -10679,22 +10713,22 @@ TempAnomWarm_June
                   TidalHeightBinary
                   </td>
                   <td style="text-align:right;">
-                  -0.0070
+                  -0.0054
                   </td>
                   <td style="text-align:left;">
-                  0.0597
+                  0.0598
                   </td>
                   <td style="text-align:right;">
-                  554.3627
+                  553.9101
                   </td>
                   <td style="text-align:right;">
-                  0.0137
+                  0.0081
                   </td>
                   <td style="text-align:right;">
-                  0.9068
+                  0.9284
                   </td>
                   <td style="text-align:right;">
-                  -0.0049
+                  -0.0038
                   </td>
                   <td style="text-align:left;">
                   </td>
@@ -10707,22 +10741,22 @@ TempAnomWarm_June
                   YearBinary
                   </td>
                   <td style="text-align:right;">
-                  -0.0390
+                  -0.0416
                   </td>
                   <td style="text-align:left;">
                   0.0811
                   </td>
                   <td style="text-align:right;">
-                  404.5175
+                  394.2045
                   </td>
                   <td style="text-align:right;">
-                  0.2213
+                  0.2533
                   </td>
                   <td style="text-align:right;">
-                  0.6383
+                  0.6151
                   </td>
                   <td style="text-align:right;">
-                  -0.0272
+                  -0.0291
                   </td>
                   <td style="text-align:left;">
                   </td>
@@ -15310,60 +15344,6 @@ TempAnomWarm_June
               </tbody>
               </table>
 
-### Les + Lac + Amp + Ido
-
-What about running all three abundance predictors in the same model? If
-it converges, then it is better for comparing partials? Tells you what
-happens with one taxa in the presence of the other. Nope decided not to
-do this
-
-``` r
-# sem_les_taxa <- psem(
-#   lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          CanopyHeight + DensityLog +
-#          YearBinary +
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#   lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          CanopyHeight + DensityLog +
-#          YearBinary +
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#   lmer(Idoteid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          CanopyHeight + DensityLog +
-#          YearBinary +
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          YearBinary + 
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
-#          YearBinary + 
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#     lmer(BladeAreaLog ~ Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
-#          TempAnomWarm_June + MonthlyMeanTemp_June +
-#          TidalHeightBinary + YearBinary +
-#          (1|Region) + (1|Meadow),
-#        data=les_large),
-#   lmer(EpiphyteLog ~ BladeAreaLog + Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
-#           TempAnomWarm_June + MonthlyMeanTemp_June + 
-#           TidalHeightBinary + YearBinary + 
-#           (1|Region) + (1|Meadow),
-#         data=les_large),
-#   lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
-#           TempAnomWarm_June + MonthlyMeanTemp_June + 
-#           TidalHeightBinary + YearBinary + 
-#           (1|Region) + (1|Meadow),
-#         data=les_large),
-#   DensityLog%~~%CanopyHeight,
-#   Ampithoid%~~%Lacuna, 
-#   Ampithoid%~~%Idoteid
-# )
-# summary(sem_les_taxa)
-```
-
 ## Partial coefficients
 
 ### prevalence
@@ -15384,7 +15364,7 @@ prev_epi_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Epi
 plot(predictorEffect("Epifauna", prev_epi_1, partial.residuals=T))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 # will want to try and get the year/site means plotted onto this plot, but can hold off for now?
@@ -15403,7 +15383,7 @@ prev_lac_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Lac
 plot(predictorEffect("Lacuna", prev_lac_1, partial.residuals=T))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
 
 ``` r
 prev_amp_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Ampithoid + CanopyHeight + DensityLog + 
@@ -15421,7 +15401,7 @@ prev_amp_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Amp
 plot(predictorEffect("Ampithoid", prev_amp_1,partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-13-3.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-11-3.png)<!-- -->
 
 ``` r
 prev_ido_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Idoteid + CanopyHeight + DensityLog + 
@@ -15439,7 +15419,7 @@ prev_ido_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Ido
 plot(predictorEffect("Idoteid", prev_ido_1,partial.residuals=T))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-13-4.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-11-4.png)<!-- -->
 
 ``` r
 prev_rich_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Richness + CanopyHeight + DensityLog + 
@@ -15457,7 +15437,7 @@ prev_rich_1 <- glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Ri
 plot(predictorEffect("Richness", prev_rich_1,partial.residuals=TRUE, main="type='link'"))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-13-5.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-11-5.png)<!-- -->
 
 ### lesion
 
@@ -15470,7 +15450,7 @@ les_epi_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + Ep
 plot(predictorEffect("Epifauna", les_epi_1, partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
 les_lac_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + Lacuna + CanopyHeight + DensityLog + 
@@ -15481,7 +15461,7 @@ les_lac_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + La
 plot(predictorEffect("Lacuna", les_lac_1, partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-14-2.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
 
 ``` r
 les_amp_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + Ampithoid + CanopyHeight + DensityLog + 
@@ -15492,7 +15472,7 @@ les_amp_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + Am
 plot(predictorEffect("Ampithoid", les_amp_1, partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-14-3.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-12-3.png)<!-- -->
 
 ``` r
 les_ido_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + Idoteid + CanopyHeight + DensityLog + 
@@ -15503,7 +15483,7 @@ les_ido_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + Id
 plot(predictorEffect("Idoteid", les_ido_1, partial.residuals=TRUE))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-14-4.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-12-4.png)<!-- -->
 
 ``` r
 les_rich_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + Richness + CanopyHeight + DensityLog + 
@@ -15514,7 +15494,7 @@ les_rich_1 <- lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + R
 plot(predictorEffect("Richness", les_rich_1, partial.residuals=T, type="rescale"))
 ```
 
-![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-14-5.png)<!-- -->
+![](TaxaInteractionSEMwithGrazing_files/figure-gfm/unnamed-chunk-12-5.png)<!-- -->
 
 ``` r
 # plot(ggpredict(les_rich_1, terms = "Richness"), rawdata = TRUE, labels = scales::log10_trans())

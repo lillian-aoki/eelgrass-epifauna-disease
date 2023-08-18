@@ -49,12 +49,19 @@ dis1_large <- select(dis, c(Epifauna = Epifauna_large, TempAnomWarm_June, Monthl
                       DensityLog, YearBinary, Year, Meadow, Region, Transect, Blade, BladeAreaLog, TidalHeightBinary, GrazingScars,
                       Prevalence, LesionArea, EpiphyteLog, Lacuna = Lacuna_large, 
                       Ampithoid = Ampithoid_large, Idoteid = Idoteid_large, Richness = Richness_large))
+# reminder, binary variables are set to 0 and 1 and modeled as numeric for piecewise SEM!
+dis1_large$Meadow_Year <- paste(dis1_large$Meadow, dis1_large$Year, sep = "_")
 dis_large <- na.omit(dis1_large)
-dis_large$Meadow_Year <- paste(dis_large$Meadow, dis_large$Year, sep = "_")
 site_large <- distinct(dis_large, Meadow_Year, .keep_all = T)
 site_large <- select(site_large, -c(Prevalence, LesionArea, EpiphyteLog, TidalHeightBinary, BladeAreaLog))
 # site <- read_csv("data/epifauna_site_for_plotting.csv")
 # site <- select(site, c())
+print("meadow-year combos in prevalence SEM")
+length(unique(dis_large$Meadow_Year))
+unique(dis_large$Meadow_Year)
+print("nrows of disease data (sample size)")
+nrow(dis_large)
+# unique(dis1_large$Meadow_Year)
 ```
 
 ## Prevalence + Epifauna
@@ -117,47 +124,6 @@ kable(a, digits = 4, caption = "Coefficients from Total Epifauna-Prevalence SEM"
 #   kable_styling(latex_options = c("HOLD_position"))
 ```
 
-An alternative SEM - flip the prevalence to epifauna arrow? Not sure this will work because of different scales
-
-```{r eval=FALSE}
-# sem_prev_epi2 <- psem(
-#   lmer(Epifauna ~ Prevalence + TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          CanopyHeight + DensityLog +
-#          YearBinary +
-#          (1|Meadow) + (1|Region),
-#        data=dis_large),
-#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          YearBinary + 
-#          (1|Meadow) + (1|Region),
-#        data=site_large),
-#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
-#          YearBinary + 
-#          (1|Meadow) + (1|Region),
-#        data=site_large),
-#     lmer(BladeAreaLog ~ Epifauna + CanopyHeight + DensityLog + 
-#          TempAnomWarm_June + MonthlyMeanTemp_June +
-#          TidalHeightBinary + YearBinary +
-#          (1|Region) + (1|Meadow),
-#        data=dis_large),
-#   lmer(EpiphyteLog ~ BladeAreaLog + Epifauna + CanopyHeight + DensityLog + 
-#          TempAnomWarm_June + MonthlyMeanTemp_June +
-#          TidalHeightBinary + YearBinary +
-#          (1|Region) + (1|Meadow),
-#        data=dis_large),
-#   glmer(Prevalence ~ BladeAreaLog + EpiphyteLog + 
-#           CanopyHeight + DensityLog + 
-#           TempAnomWarm_June + MonthlyMeanTemp_June + 
-#           TidalHeightBinary + YearBinary + 
-#           (1|Region) + (1|Meadow),
-#         data=dis_large,
-#         family = "binomial"),
-#   DensityLog%~~%CanopyHeight
-# )
-# summary(sem_prev_epi2)
-
-```
-
-This doesn't really make sense - because the scale changes when the arrow is reversed, which makes all the paths change.  
 
 ## Prev + Amp
 ```{r prev2}
@@ -404,6 +370,8 @@ les_large$LesionAreaLog <- log10(les_large$LesionArea)
 les_large <- na.omit(les_large)
 
 site_les <- distinct(les_large, Meadow_Year, .keep_all = T)
+print("sample size for lesion models")
+nrow(les_large)
 ```
 
 ```{r les_epi}
@@ -495,7 +463,7 @@ sem_les_amp <- psem(
           (1|Region) + (1|Meadow),
         data=les_large,
         family = "binomial"),
-  lmer(LesionAreaLog ~ BladeAreaLog + GrazingScars + #EpiphyteLog + 
+  lmer(LesionAreaLog ~ BladeAreaLog + GrazingScars + EpiphyteLog + 
          Ampithoid + CanopyHeight + DensityLog + 
           TempAnomWarm_June + MonthlyMeanTemp_June + 
           TidalHeightBinary + YearBinary + 
@@ -690,58 +658,6 @@ Coefficient table:
 j <- coefs(sem_les_rich)
 knitr::kable(j, digits = 4, caption = "Coeffiecients from Richness-Lesion Area SEM")
 
-```
-
-### Les + Lac + Amp + Ido
-
-What about running all three abundance predictors in the same model? If it converges, then it is better for comparing partials? Tells you what happens with one taxa in the presence of the other. Nope decided not to do this
-
-
-```{r eval=FALSE}
-# sem_les_taxa <- psem(
-#   lmer(Lacuna ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          CanopyHeight + DensityLog +
-#          YearBinary +
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#   lmer(Ampithoid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          CanopyHeight + DensityLog +
-#          YearBinary +
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#   lmer(Idoteid ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          CanopyHeight + DensityLog +
-#          YearBinary +
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#   lmer(CanopyHeight ~ TempAnomWarm_June + MonthlyMeanTemp_June + 
-#          YearBinary + 
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#   lmer(DensityLog ~ TempAnomWarm_June + MonthlyMeanTemp_June +
-#          YearBinary + 
-#          (1|Meadow) + (1|Region),
-#        data=site_les),
-#     lmer(BladeAreaLog ~ Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
-#          TempAnomWarm_June + MonthlyMeanTemp_June +
-#          TidalHeightBinary + YearBinary +
-#          (1|Region) + (1|Meadow),
-#        data=les_large),
-#   lmer(EpiphyteLog ~ BladeAreaLog + Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
-#           TempAnomWarm_June + MonthlyMeanTemp_June + 
-#           TidalHeightBinary + YearBinary + 
-#           (1|Region) + (1|Meadow),
-#         data=les_large),
-#   lmer(LesionAreaLog ~ BladeAreaLog + EpiphyteLog + Lacuna + Ampithoid + Idoteid + CanopyHeight + DensityLog + 
-#           TempAnomWarm_June + MonthlyMeanTemp_June + 
-#           TidalHeightBinary + YearBinary + 
-#           (1|Region) + (1|Meadow),
-#         data=les_large),
-#   DensityLog%~~%CanopyHeight,
-#   Ampithoid%~~%Lacuna, 
-#   Ampithoid%~~%Idoteid
-# )
-# summary(sem_les_taxa)
 ```
 
 
