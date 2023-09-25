@@ -30,7 +30,9 @@ Using all sites and years and not restricting to temperature data
 ```{r data}
 all_epi <- read_csv("data/epifauna_for_region_specific_models_no_epiphyte.csv")
 all_epi$fYear <- as.factor(all_epi$Year)
-
+all_epi$Meadow_year <- paste(all_epi$Meadow, all_epi$Year, sep= "_")
+length(unique(all_epi$Meadow_year))
+unique(all_epi$Meadow_year)
 les <- subset(all_epi, LesionArea>0)
 les$LesionAreaLog <- log10(les$LesionArea)
 

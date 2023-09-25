@@ -44,7 +44,7 @@ mur <- select(mur, -c("TempAnomTot_October", "TempAnomTot_November", "TempAnomTo
 temps <- rbind(mur, ghr)
 # combine with a right-join to limit to sites with a temperature record
 sg_temps <- right_join(sg, temps, by = c("Year", "Region", "SiteCode"="Site"))
-# alternatively, do a full join so we can keep all sites for later analysis
+# alternatively, do a full join so we can keep all sites for later analysis - Karl will use this 
 sg_temps2 <- full_join(sg, temps, by = c("Year", "Region", "SiteCode"="Site"))
 
 # with udpated epifauna data, no longer have duplicate entries, disregard this section
@@ -61,6 +61,10 @@ sg_temps2 <- full_join(sg, temps, by = c("Year", "Region", "SiteCode"="Site"))
 sg_temps$transect_unique_code <- paste(sg_temps$Region, ".", sg_temps$SiteCode, ".", 
                                        sg_temps$TidalHeight, sg_temps$Transect, ".", sg_temps$Year, sep="")
 sg_temps_epi <- inner_join(sg_temps, epi)
+# repeat for second (full-join) dataset
+sg_temps2$transect_unique_code <- paste(sg_temps2$Region, ".", sg_temps2$SiteCode, ".", 
+                                       sg_temps2$TidalHeight, sg_temps2$Transect, ".", sg_temps2$Year, sep="")
+sg_temps2_epi <- full_join(sg_temps2, epi)
 # adjust grazing scars - only 5 blades in 2019
 # gz <- subset(gz, Blade>15 & Blade<21)
 # this limits SD to one blade - but that's off. Instead, pick 5 blades from SD and blades >15 for WA
@@ -74,7 +78,7 @@ gz_summ <- gz %>%
   group_by(Region, SiteCode, Year, Transect, TidalHeight) %>%
   summarise(GrazingScarsMeanTransect=mean(GrazingScars, na.rm=TRUE), CountScars=length(!is.na(GrazingScars)))
 sg_temps_epi_gz <- left_join(sg_temps_epi, gz_summ)
-
+sg_temps2_epi_gz <- left_join(sg_temps2_epi, gz_summ)
 # extract transect locations from the meta data
 meta19 <- subset(meta, Year=="2019")
 loc19 <- select(meta19, c("Region","SiteCode", "TidalHeight", "Transect", "TransectBeginDecimalLatitude",
@@ -89,25 +93,31 @@ meta_site <- full_meta %>%
 
 # add meta data
 sg_temps_epi_gz_meta <- left_join(sg_temps_epi_gz, full_meta)
-
+sg_temps2_epi_gz_meta <- left_join(sg_temps2_epi_gz, full_meta)
 # final step is to add a few calculated seagrass metrics that might be useful for the SEM - Canopy height and Structure
 sg_temps_epi_gz_meta$CanopyHeight <- sg_temps_epi_gz_meta$LongestBladeLengthMean + sg_temps_epi_gz_meta$SheathLengthMean
+sg_temps2_epi_gz_meta$CanopyHeight <- sg_temps2_epi_gz_meta$LongestBladeLengthMean + sg_temps2_epi_gz_meta$SheathLengthMean
 # note that Canopy Height and Sheath Length are both in mm, so this value is pretty large (divided by 100 to convert mm to m)
 # calculate Structure as Canopy Height times Density
 sg_temps_epi_gz_meta$Structure <- sg_temps_epi_gz_meta$CanopyHeight/100 * sg_temps_epi_gz_meta$DensityShootsMean
+sg_temps2_epi_gz_meta$Structure <- sg_temps2_epi_gz_meta$CanopyHeight/100 * sg_temps2_epi_gz_meta$DensityShootsMean
 # take log base 10 to improve inference of results
 sg_temps_epi_gz_meta$StructureLog <- log10(sg_temps_epi_gz_meta$Structure)
+sg_temps2_epi_gz_meta$StructureLog <- log10(sg_temps2_epi_gz_meta$Structure)
 # convert EpiphytePerAreaMean units from g per cm2 to mg per cm2
 sg_temps_epi_gz_meta$EpiphytePerAreaMeanMg <- sg_temps_epi_gz_meta$EpiphytePerAreaMean*1000
+sg_temps2_epi_gz_meta$EpiphytePerAreaMeanMg <- sg_temps2_epi_gz_meta$EpiphytePerAreaMean*1000
+
 # calculate log of shoot density
 sg_temps_epi_gz_meta$DensityLog <- log10(sg_temps_epi_gz_meta$DensityShootsMean)
+sg_temps2_epi_gz_meta$DensityLog <- log10(sg_temps2_epi_gz_meta$DensityShootsMean)
 # compiled dataset is now ready for modeling etc. 
 write_csv(sg_temps_epi_gz_meta, "data/full_seagrass_epifauna_for_SEM.csv")
-
+write_csv(sg_temps2_epi_gz_meta, "data/EGWD_transect_metrics_20230925.csv")
 
 # Blade level
 # Same idea, but now pulling blade-level processing - to combine with some transect level markers
-# blade <- read_csv("data/meter_level_shoot_metrics_with_disease.csv")
+blade <- read_csv("data/meter_level_shoot_metrics_with_disease.csv")
 # blade$GrazingScars <- ifelse(blade$GrazingScars==0, 0, 1)
 # write_csv(blade, "data/blade_data_for_SEM.csv")
 # the above is for the 5 epiphyte blades only. We've decided to include additional blades from 2021 (but not 2020?)

@@ -17,12 +17,15 @@ site_dat <- read_csv("data/epifauna_site_for_plotting.csv")
 site_dat$fYear <- ordered(as.factor(site_dat$Year), levels = c("2019", "2020", "2021"))
 site_dat$Region <- ordered(site_dat$Region, levels=region_order)
 
+# epifauna distributions ####
 amp_plot <- ggplot(site_dat, aes(x=Latitude, y=Ampithoid_large, color=fYear))+
   geom_point(size=1.5, alpha=0.75)+
   xlab("")+
   ylab("Log Ampithoid \nabundance")+
   scale_y_continuous(limits=c(-2, 1))+
-  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60))+
+  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
+  scale_color_manual(values=c('#CCBB44', '#66CCEE', '#AA3377'))+
+  # scale_x_reverse(breaks = c(60, 55, 50, 45, 40, 35, 30))+
   theme_bw(base_size = 12)+
   theme(panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.spacing = unit(0, "pt"),legend.title = element_blank(),
@@ -31,7 +34,9 @@ amp_plot
 lac_plot <- ggplot(site_dat, aes(x=Latitude, y=Lacuna_large, color=fYear))+geom_point(size=1.5, alpha=0.75)+
   xlab("")+
   ylab("Log Lacuna \nabundance")+
+  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
   scale_y_continuous(limits=c(-2, 1))+
+  scale_color_manual(values=c('#CCBB44', '#66CCEE', '#AA3377'))+
   theme_bw(base_size = 12)+
   theme(panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.spacing = unit(0, "pt"),legend.title = element_blank(),
@@ -40,12 +45,17 @@ lac_plot <- ggplot(site_dat, aes(x=Latitude, y=Lacuna_large, color=fYear))+geom_
 lac_plot
 
 ido_plot <- ggplot(site_dat, aes(x=Latitude, y=Idoteid_large, color=fYear))+geom_point(size=1.5, alpha=0.75)+
-  annotate(geom="text", x = c(32.5, 38.5, 43.5, 48, 52, 55),
+  annotate(geom="text", x = c(33, 38.5, 43.5, 48, 52, 55),
            y=0.4, color = "grey30", size = 2.5,
            label = c("San\nDiego", "Bodega\nBay", "Oregon", "Washington","British\nColumbia", "Alaska"),
            angle = 45)+
   ylab("Log Idoteid \nabundance")+
+  xlab("Latitude (ºN)")+
   scale_y_continuous(limits=c(-2, 1))+
+  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
+  scale_color_manual(values=c('#CCBB44', '#66CCEE', '#AA3377'))+
+  # scale_color_manual(values=c('#4477AA', '#EE6677', '#228833', '#CCBB44', '#66CCEE', '#AA3377'))+
+  # scale_color_manual(values=c('#77AADD', '#EE8866', '#EEDD88', '#FFAABB', '#99DDFF', '#44BB99'))+
   theme_bw(base_size = 12)+
   theme(panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.spacing = unit(0, "pt"), legend.title = element_blank(),
@@ -55,6 +65,50 @@ ido_plot
 
 lac_plot / amp_plot / ido_plot / guide_area() + plot_layout(guides="collect", heights = c(1,1,1,0.2))
 ggsave("output/taxa_latitude_2.jpg", width = 4, height =6 )
+
+# flip axes of epifauna dist ####
+amp_plot2 <- ggplot(site_dat, aes(y=Latitude, x=Ampithoid_large, color=fYear))+
+  geom_point(size=1.5, alpha=0.75)+
+  ylab("")+
+  xlab("Log Ampithoid \nabundance")+
+  scale_x_continuous(limits=c(-2, 1))+
+  scale_y_continuous(breaks = c(30,35,40, 45, 50, 55, 60))+
+  theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank(), 
+        legend.position = "bottom", legend.box.spacing = unit(0, "pt"), legend.title = element_blank(),legend.margin = margin(2,0,0,0,unit="pt"),
+        plot.margin = unit(c(0,0,0,0), "pt"))
+amp_plot2
+
+lac_plot2 <- ggplot(site_dat, aes(y=Latitude, x=Lacuna_large, color=fYear))+geom_point(size=1.5, alpha=0.75)+
+  ylab("Latitude (ºN)")+
+  xlab("Log Lacuna \nabundance")+
+  scale_x_continuous(limits=c(-2, 1))+
+  theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank(), 
+        legend.position = "bottom", legend.box.spacing = unit(0, "pt"), legend.title = element_blank(),legend.margin = margin(2,0,0,0,unit="pt"),
+        plot.margin = unit(c(0,0,0,0), "pt"))
+
+lac_plot2
+
+ido_plot2 <- ggplot(site_dat, aes(y=Latitude, x=Idoteid_large, color=fYear))+geom_point(size=1.5, alpha=0.75)+
+  annotate(geom="text", y = c(33, 38.5, 43.5, 48, 52, 55),
+           x=0.4, color = "grey30", size = 2.5,
+           label = c("San\nDiego", "Bodega\nBay", "Oregon", "Washington","British\nColumbia", "Alaska"),
+           angle = 20)+
+  xlab("Log Idoteid \nabundance")+
+  ylab("")+
+  scale_x_continuous(limits=c(-2, 1))+
+  theme_bw(base_size = 12)+
+  theme(panel.grid = element_blank(), 
+        legend.position = "bottom", legend.box.spacing = unit(0, "pt"), legend.title = element_blank(),legend.margin = margin(2,0,0,0,unit="pt"),
+        plot.margin = unit(c(0,0,0,0), "pt"))
+
+ido_plot2
+
+(lac_plot2 + amp_plot2 + ido_plot2 ) / guide_area() + plot_layout(guides="collect", widths = c(1,1,1), heights = c(1,0.2))
+ggsave("output/taxa_latitude_2_rev.jpg", width = 6, height =6 )
+# this is okay but I don't really like it - it's harder to follow, swapping axes rarely works :(
+####
 
 ggplot(site_dat, aes(x=Latitude, y=Prevalence, color=Region, shape=fYear))+geom_point(size=1)
 ggplot(site_dat, aes(x=Latitude, y=LesionAreaLog, color=Region, shape=fYear))+geom_point(size=1)
