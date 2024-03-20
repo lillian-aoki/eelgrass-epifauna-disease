@@ -5,8 +5,8 @@ output: github_document
 
 ```{r setup, include=FALSE}
 library(here)
-source(here("R/helpers.R"))
-source(here("R/coefs.R"))
+# source(here("R/helpers.R"))
+# source(here("R/coefs.R"))
 library(nlme)
 library(lme4)
 library(dplyr)

@@ -161,21 +161,23 @@ summary(sem_prev_epi)
     ##   Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Epifauna + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  142.393   267.286
+    ##     AIC
+    ##  4437.475
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##       Epifauna ~ TidalHeightBinary + ...      coef 1275.003     0.0000  0.9946 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 1277.005     0.0028  0.9581 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 1277.001     0.0194  0.8893 
-    ##       Epifauna ~ TidalHeightBinary + ...      coef 1275.003     0.0000  0.9946 
     ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     0.9217  0.3567 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 2.393 with P-value = 0.967 and on 8 degrees of freedom
+    ## Chi-Squared = 7398.107 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 2.393 with P-value = 0.967 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -234,7 +236,7 @@ summary(sem_prev_epi)
     ##    0.3019      -0.0976    
     ##    0.1542      -0.1409    
     ##    0.0888      -0.3508    
-    ##    0.0286       -0.159   *
+    ##    0.0286      -0.1590   *
     ##    0.0188      -0.2195   *
     ##    0.2150       0.2577    
     ##    0.2535      -0.0618    
@@ -242,35 +244,35 @@ summary(sem_prev_epi)
     ##    0.0000       0.5552 ***
     ##    0.0188      -0.1667   *
     ##    0.1452      -0.0604    
-    ##    0.7389       -0.027    
+    ##    0.7389      -0.0270    
     ##    0.0000      -0.2874 ***
     ##    0.0026       0.0648  **
     ##    0.0004      -0.0645 ***
     ##    0.1244       0.0542    
     ##    0.0016      -0.1417  **
-    ##    0.0603       -0.104    
+    ##    0.0603      -0.1040    
     ##    0.0229       0.0759   *
     ##    0.0000      -0.3697 ***
     ##    0.0249      -0.0261   *
     ##    0.2433      -0.0171    
-    ##    0.0000            - ***
-    ##    0.1376            -    
-    ##    0.2911            -    
-    ##    0.3124            -    
-    ##    0.7586            -    
-    ##    0.0000            - ***
-    ##    0.6219            -    
-    ##    0.0001            - ***
-    ##    0.0000            - ***
-    ##    0.8118            -    
-    ##    0.0000            - ***
-    ##    0.0002            - ***
-    ##    0.0107            -   *
-    ##    0.0000            - ***
-    ##    0.1412            -    
-    ##    0.5746            -    
-    ##    0.0000            - ***
-    ##    0.0027            -  **
+    ##    0.0000       0.3319 ***
+    ##    0.1376      -0.1244    
+    ##    0.2911       0.1213    
+    ##    0.3124       0.1466    
+    ##    0.7586       0.0349    
+    ##    0.0000       1.3078 ***
+    ##    0.6219       0.0173    
+    ##    0.0001      -0.1727 ***
+    ##    0.0000       0.2731 ***
+    ##    0.8118      -0.0176    
+    ##    0.0000       0.2325 ***
+    ##    0.0002       0.2846 ***
+    ##    0.0107       0.2579   *
+    ##    0.0000       0.5274 ***
+    ##    0.1412       0.0927    
+    ##    0.5746       0.0660    
+    ##    0.0000       0.1419 ***
+    ##    0.0027       0.1139  **
     ##    0.2673      -0.0973    
     ## 
     ##   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05
@@ -278,14 +280,14 @@ summary(sem_prev_epi)
     ## ---
     ## Individual R-squared:
     ## 
-    ##       Response method Marginal Conditional
-    ##       Epifauna   none     0.24        0.83
-    ##   CanopyHeight   none     0.17        0.89
-    ##     DensityLog   none     0.09        0.93
-    ##   BladeAreaLog   none     0.51        0.68
-    ##    EpiphyteLog   none     0.14        0.87
-    ##   GrazingScars  delta     0.29        0.81
-    ##     Prevalence  delta     0.17        0.42
+    ##       Response      method Marginal Conditional
+    ##       Epifauna        none     0.24        0.83
+    ##   CanopyHeight        none     0.17        0.89
+    ##     DensityLog        none     0.09        0.93
+    ##   BladeAreaLog        none     0.51        0.68
+    ##    EpiphyteLog        none     0.14        0.87
+    ##   GrazingScars theoretical     0.31        0.86
+    ##     Prevalence theoretical     0.19        0.47
 
 Passes global fit.
 
@@ -1695,21 +1697,23 @@ summary(sem_prev_amp)
     ##   Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  142.773   267.666
+    ##     AIC
+    ##  4439.925
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##      Ampithoid ~ TidalHeightBinary + ...      coef 1275.001     0.0403  0.8410 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 1277.005     0.0028  0.9581 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 1277.001     0.0194  0.8893 
-    ##      Ampithoid ~ TidalHeightBinary + ...      coef 1275.001     0.0403  0.8410 
-    ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     0.9369  0.3488 
+    ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     0.9383  0.3481 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 2.773 with P-value = 0.948 and on 8 degrees of freedom
+    ## Chi-Squared = 8840.76 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 2.777 with P-value = 0.948 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -1763,12 +1767,12 @@ summary(sem_prev_amp)
     ##   P.Value Std.Estimate    
     ##    0.0152      -0.2378   *
     ##    0.0183       0.5062   *
-    ##    0.4213       -0.121    
+    ##    0.4213      -0.1210    
     ##    0.8890       0.0264    
     ##    0.0041      -0.1794  **
     ##    0.1542      -0.1409    
     ##    0.0888      -0.3508    
-    ##    0.0286       -0.159   *
+    ##    0.0286      -0.1590   *
     ##    0.0188      -0.2195   *
     ##    0.2150       0.2577    
     ##    0.2535      -0.0618    
@@ -1787,24 +1791,24 @@ summary(sem_prev_amp)
     ##    0.0003      -0.3051 ***
     ##    0.0243      -0.0262   *
     ##    0.0110      -0.0423   *
-    ##    0.0000            - ***
-    ##    0.7849            -    
-    ##    0.0888            -    
-    ##    0.0774            -    
-    ##    0.3574            -    
-    ##    0.0000            - ***
-    ##    0.6032            -    
-    ##    0.0030            -  **
-    ##    0.0000            - ***
-    ##    0.9050            -    
-    ##    0.0000            - ***
-    ##    0.7761            -    
-    ##    0.2231            -    
-    ##    0.0010            -  **
-    ##    0.8613            -    
-    ##    0.7927            -    
-    ##    0.0000            - ***
-    ##    0.0182            -   *
+    ##    0.0000       0.3336 ***
+    ##    0.7849       0.0310    
+    ##    0.0888       0.2068    
+    ##    0.0774       0.2473    
+    ##    0.3574       0.1075    
+    ##    0.0000       1.2779 ***
+    ##    0.6032       0.0182    
+    ##    0.0030      -0.1533  **
+    ##    0.0000       0.2676 ***
+    ##    0.9050      -0.0089    
+    ##    0.0000       0.2214 ***
+    ##    0.7761       0.0334    
+    ##    0.2231       0.1248    
+    ##    0.0010       0.4011  **
+    ##    0.8613       0.0120    
+    ##    0.7927       0.0374    
+    ##    0.0000       0.1398 ***
+    ##    0.0182       0.1058   *
     ##    0.2673      -0.0973    
     ## 
     ##   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05
@@ -1812,14 +1816,14 @@ summary(sem_prev_amp)
     ## ---
     ## Individual R-squared:
     ## 
-    ##       Response method Marginal Conditional
-    ##      Ampithoid   none     0.25        0.95
-    ##   CanopyHeight   none     0.17        0.89
-    ##     DensityLog   none     0.09        0.93
-    ##   BladeAreaLog   none     0.54        0.66
-    ##    EpiphyteLog   none     0.14        0.88
-    ##   GrazingScars  delta     0.30        0.81
-    ##     Prevalence  delta     0.12        0.45
+    ##       Response      method Marginal Conditional
+    ##      Ampithoid        none     0.25        0.95
+    ##   CanopyHeight        none     0.17        0.89
+    ##     DensityLog        none     0.09        0.93
+    ##   BladeAreaLog        none     0.54        0.66
+    ##    EpiphyteLog        none     0.14        0.88
+    ##   GrazingScars theoretical     0.31        0.86
+    ##     Prevalence theoretical     0.14        0.50
 
 Passes global fit.
 
@@ -3223,21 +3227,23 @@ summary(sem_prev_lac)
     ##   Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Lacuna + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  143.210   268.103
+    ##     AIC
+    ##  4485.993
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##         Lacuna ~ TidalHeightBinary + ...      coef 1275.007     0.0334  0.8550 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 1277.005     0.0028  0.9581 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 1277.001     0.0194  0.8893 
-    ##         Lacuna ~ TidalHeightBinary + ...      coef 1275.007     0.0334  0.8550 
-    ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     1.0900  0.2757 
+    ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     1.0893  0.2760 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 3.21 with P-value = 0.92 and on 8 degrees of freedom
+    ## Chi-Squared = 5905.227 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 3.208 with P-value = 0.921 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -3291,16 +3297,16 @@ summary(sem_prev_lac)
     ##   P.Value Std.Estimate    
     ##    0.1247       0.2356    
     ##    0.9024       0.0316    
-    ##    0.9344        0.018    
+    ##    0.9344       0.0180    
     ##    0.8026       0.0703    
     ##    0.0725      -0.1939    
     ##    0.1542      -0.1409    
     ##    0.0888      -0.3508    
-    ##    0.0286       -0.159   *
+    ##    0.0286      -0.1590   *
     ##    0.0188      -0.2195   *
     ##    0.2150       0.2577    
     ##    0.2535      -0.0618    
-    ##    0.9900       -5e-04    
+    ##    0.9900      -0.0005    
     ##    0.0000       0.5884 ***
     ##    0.0621      -0.1252    
     ##    0.4172      -0.0306    
@@ -3315,24 +3321,24 @@ summary(sem_prev_lac)
     ##    0.0000      -0.3716 ***
     ##    0.0240      -0.0263   *
     ##    0.0566      -0.0287    
-    ##    0.0000            - ***
-    ##    0.0087            -  **
-    ##    0.3654            -    
-    ##    0.0466            -   *
-    ##    0.0001            - ***
-    ##    0.0028            -  **
-    ##    0.4933            -    
-    ##    0.0006            - ***
-    ##    0.0000            - ***
-    ##    0.9770            -    
-    ##    0.0000            - ***
-    ##    0.0002            - ***
-    ##    0.4647            -    
-    ##    0.0016            -  **
-    ##    0.1932            -    
-    ##    0.5056            -    
-    ##    0.0000            - ***
-    ##    0.0006            - ***
+    ##    0.0000       0.3542 ***
+    ##    0.0087       0.2336  **
+    ##    0.3654       0.1073    
+    ##    0.0466       0.2427   *
+    ##    0.0001       0.2711 ***
+    ##    0.0028       0.5931  **
+    ##    0.4933       0.0241    
+    ##    0.0006      -0.1548 ***
+    ##    0.0000       0.2736 ***
+    ##    0.9770       0.0021    
+    ##    0.0000       0.2156 ***
+    ##    0.0002       0.2638 ***
+    ##    0.4647       0.0637    
+    ##    0.0016       0.3273  **
+    ##    0.1932      -0.0763    
+    ##    0.5056       0.0704    
+    ##    0.0000       0.1420 ***
+    ##    0.0006       0.1349 ***
     ##    0.2673      -0.0973    
     ## 
     ##   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05
@@ -3340,14 +3346,14 @@ summary(sem_prev_lac)
     ## ---
     ## Individual R-squared:
     ## 
-    ##       Response method Marginal Conditional
-    ##         Lacuna   none     0.05        0.83
-    ##   CanopyHeight   none     0.17        0.89
-    ##     DensityLog   none     0.09        0.93
-    ##   BladeAreaLog   none     0.52        0.67
-    ##    EpiphyteLog   none     0.12        0.87
-    ##   GrazingScars  delta     0.24        0.38
-    ##     Prevalence  delta     0.14        0.36
+    ##       Response      method Marginal Conditional
+    ##         Lacuna        none     0.05        0.83
+    ##   CanopyHeight        none     0.17        0.89
+    ##     DensityLog        none     0.09        0.93
+    ##   BladeAreaLog        none     0.52        0.67
+    ##    EpiphyteLog        none     0.12        0.87
+    ##   GrazingScars theoretical     0.29        0.46
+    ##     Prevalence theoretical     0.16        0.41
 
 Passes global fit.
 
@@ -4752,21 +4758,23 @@ summary(sem_prev_ido)
     ##   Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Idoteid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  142.612   267.505
+    ##     AIC
+    ##  4452.437
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##        Idoteid ~ TidalHeightBinary + ...      coef 1275.001     0.0068  0.9342 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 1277.005     0.0028  0.9581 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 1277.001     0.0194  0.8893 
-    ##        Idoteid ~ TidalHeightBinary + ...      coef 1275.001     0.0068  0.9342 
-    ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     0.9534  0.3404 
+    ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     0.9535  0.3404 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 2.612 with P-value = 0.956 and on 8 degrees of freedom
+    ## Chi-Squared = 8635.91 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 2.612 with P-value = 0.956 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -4825,7 +4833,7 @@ summary(sem_prev_ido)
     ##    0.8325      -0.0199    
     ##    0.1542      -0.1409    
     ##    0.0888      -0.3508    
-    ##    0.0286       -0.159   *
+    ##    0.0286      -0.1590   *
     ##    0.0188      -0.2195   *
     ##    0.2150       0.2577    
     ##    0.2535      -0.0618    
@@ -4837,31 +4845,31 @@ summary(sem_prev_ido)
     ##    0.0000      -0.2875 ***
     ##    0.0016       0.0674  **
     ##    0.0004      -0.0654 ***
-    ##    0.4675        0.029    
+    ##    0.4675       0.0290    
     ##    0.0001      -0.1755 ***
     ##    0.0134      -0.1389   *
     ##    0.1866       0.0494    
     ##    0.0008      -0.3428 ***
     ##    0.0238      -0.0264   *
     ##    0.2291      -0.0178    
-    ##    0.0000            - ***
-    ##    0.2997            -    
-    ##    0.0426            -   *
-    ##    0.0444            -   *
-    ##    0.2330            -    
-    ##    0.0001            - ***
-    ##    0.6064            -    
-    ##    0.0002            - ***
-    ##    0.0000            - ***
-    ##    0.8081            -    
-    ##    0.0000            - ***
-    ##    0.0207            -   *
-    ##    0.5777            -    
-    ##    0.0039            -  **
-    ##    0.7654            -    
-    ##    0.3035            -    
-    ##    0.0000            - ***
-    ##    0.0058            -  **
+    ##    0.0000       0.3337 ***
+    ##    0.2997      -0.0858    
+    ##    0.0426       0.2330   *
+    ##    0.0444       0.2839   *
+    ##    0.2330       0.1429    
+    ##    0.0001       1.1569 ***
+    ##    0.6064       0.0180    
+    ##    0.0002      -0.1661 ***
+    ##    0.0000       0.2705 ***
+    ##    0.8081      -0.0180    
+    ##    0.0000       0.2279 ***
+    ##    0.0207       0.1747   *
+    ##    0.5777       0.0561    
+    ##    0.0039       0.3450  **
+    ##    0.7654      -0.0191    
+    ##    0.3035       0.1494    
+    ##    0.0000       0.1400 ***
+    ##    0.0058       0.1059  **
     ##    0.2673      -0.0973    
     ## 
     ##   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05
@@ -4869,14 +4877,14 @@ summary(sem_prev_ido)
     ## ---
     ## Individual R-squared:
     ## 
-    ##       Response method Marginal Conditional
-    ##        Idoteid   none     0.14        0.85
-    ##   CanopyHeight   none     0.17        0.89
-    ##     DensityLog   none     0.09        0.93
-    ##   BladeAreaLog   none     0.53        0.67
-    ##    EpiphyteLog   none     0.12        0.86
-    ##   GrazingScars  delta     0.30        0.77
-    ##     Prevalence  delta     0.15        0.45
+    ##       Response      method Marginal Conditional
+    ##        Idoteid        none     0.14        0.85
+    ##   CanopyHeight        none     0.17        0.89
+    ##     DensityLog        none     0.09        0.93
+    ##   BladeAreaLog        none     0.53        0.67
+    ##    EpiphyteLog        none     0.12        0.86
+    ##   GrazingScars theoretical     0.32        0.83
+    ##     Prevalence theoretical     0.17        0.50
 
 Passes global fit.
 
@@ -6265,6 +6273,9 @@ summary(sem_prev_rich)
 
     ##   |                                                                              |                                                                      |   0%  |                                                                              |==================                                                    |  25%  |                                                                              |===================================                                   |  50%  |                                                                              |====================================================                  |  75%  |                                                                              |======================================================================| 100%
 
+    ## Warning: Check model convergence: log-likelihood estimates lead to negative Chi-
+    ## squared!
+
     ## 
     ## Structural Equation Model of sem_prev_rich 
     ## 
@@ -6278,21 +6289,23 @@ summary(sem_prev_rich)
     ##   Prevalence ~ BladeAreaLog + EpiphyteLog + GrazingScars + Richness + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  142.422   267.315
+    ##     AIC
+    ##  4670.745
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##       Richness ~ TidalHeightBinary + ...      coef 1275.003     0.0002  0.9875 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 1277.005     0.0028  0.9581 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 1277.001     0.0194  0.8893 
-    ##       Richness ~ TidalHeightBinary + ...      coef 1275.003     0.0002  0.9875 
-    ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     0.9268  0.3540 
+    ##         GrazingScars ~ EpiphyteLog + ...      coef 1307.000     0.9271  0.3539 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 2.422 with P-value = 0.965 and on 8 degrees of freedom
+    ## Chi-Squared = NA with P-value = NA and on 4 degrees of freedom
+    ## Fisher's C = 2.423 with P-value = 0.965 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -6348,16 +6361,16 @@ summary(sem_prev_rich)
     ##    0.4758       0.1285    
     ##    0.6926      -0.1015    
     ##    0.7668       0.0779    
-    ##    0.9226       -0.015    
+    ##    0.9226      -0.0150    
     ##    0.1542      -0.1409    
     ##    0.0888      -0.3508    
-    ##    0.0286       -0.159   *
+    ##    0.0286      -0.1590   *
     ##    0.0188      -0.2195   *
     ##    0.2150       0.2577    
     ##    0.2535      -0.0618    
     ##    0.8085       0.0078    
     ##    0.0000       0.5859 ***
-    ##    0.0634       -0.124    
+    ##    0.0634      -0.1240    
     ##    0.4680      -0.0281    
     ##    0.5669      -0.0446    
     ##    0.0000      -0.2875 ***
@@ -6370,24 +6383,24 @@ summary(sem_prev_rich)
     ##    0.0000      -0.3369 ***
     ##    0.0207      -0.0269   *
     ##    0.1837      -0.0193    
-    ##    0.0000            - ***
-    ##    0.8985            -    
-    ##    0.0762            -    
-    ##    0.0796            -    
-    ##    0.3805            -    
-    ##    0.0000            - ***
-    ##    0.5995            -    
-    ##    0.0002            - ***
-    ##    0.0000            - ***
-    ##    0.9227            -    
-    ##    0.0000            - ***
-    ##    0.3395            -    
-    ##    0.1774            -    
-    ##    0.0012            -  **
-    ##    0.7421            -    
-    ##    0.7097            -    
-    ##    0.0000            - ***
-    ##    0.0095            -  **
+    ##    0.0000       0.3348 ***
+    ##    0.8985      -0.0083    
+    ##    0.0762       0.1935    
+    ##    0.0796       0.2371    
+    ##    0.3805       0.0944    
+    ##    0.0000       1.2821 ***
+    ##    0.5995       0.0184    
+    ##    0.0002      -0.1617 ***
+    ##    0.0000       0.2693 ***
+    ##    0.9227      -0.0072    
+    ##    0.0000       0.2193 ***
+    ##    0.3395      -0.0631    
+    ##    0.1774       0.1433    
+    ##    0.0012       0.4022  **
+    ##    0.7421      -0.0218    
+    ##    0.7097       0.0471    
+    ##    0.0000       0.1397 ***
+    ##    0.0095       0.0992  **
     ##    0.2673      -0.0973    
     ## 
     ##   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05
@@ -6395,14 +6408,14 @@ summary(sem_prev_rich)
     ## ---
     ## Individual R-squared:
     ## 
-    ##       Response method Marginal Conditional
-    ##       Richness   none     0.31        0.39
-    ##   CanopyHeight   none     0.17        0.89
-    ##     DensityLog   none     0.09        0.93
-    ##   BladeAreaLog   none     0.51        0.66
-    ##    EpiphyteLog   none     0.11        0.88
-    ##   GrazingScars  delta     0.29        0.81
-    ##     Prevalence  delta     0.12        0.47
+    ##       Response      method Marginal Conditional
+    ##       Richness        none     0.31        0.39
+    ##   CanopyHeight        none     0.17        0.89
+    ##     DensityLog        none     0.09        0.93
+    ##   BladeAreaLog        none     0.51        0.66
+    ##    EpiphyteLog        none     0.11        0.88
+    ##   GrazingScars theoretical     0.31        0.86
+    ##     Prevalence theoretical     0.14        0.52
 
 Passes global fit.
 
@@ -7816,21 +7829,23 @@ summary(sem_les_epi)
     ##   LesionAreaLog ~ BladeAreaLog + EpiphyteLog + GrazingScars + Epifauna + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  147.700   271.075
+    ##     AIC
+    ##  2556.102
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##       Epifauna ~ TidalHeightBinary + ...      coef 540.3801     0.1058  0.7451 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 542.3982     0.8516  0.3565 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 542.4390     1.5162  0.2187 
-    ##       Epifauna ~ TidalHeightBinary + ...      coef 540.3801     0.1058  0.7451 
-    ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000    -0.0054  0.9957 
+    ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000    -0.0026  0.9979 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 5.7 with P-value = 0.681 and on 8 degrees of freedom
+    ## Chi-Squared = 3323.282 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 5.695 with P-value = 0.681 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -7899,23 +7914,23 @@ summary(sem_les_epi)
     ##    0.3275       0.0483    
     ##    0.1017      -0.1286    
     ##    0.0000      -0.2767 ***
-    ##    0.0054        0.083  **
+    ##    0.0054       0.0830  **
     ##    0.0031      -0.1041  **
     ##    0.7496       0.0196    
     ##    0.1199      -0.1193    
     ##    0.0659      -0.1745    
     ##    0.0514       0.1135    
     ##    0.0003      -0.4886 ***
-    ##    0.1729       -0.029    
-    ##    0.5338        0.016    
-    ##    0.0015            -  **
-    ##    0.1216            -    
-    ##    0.7471            -    
-    ##    0.6326            -    
-    ##    0.0343            -   *
-    ##    0.0024            -  **
-    ##    0.7716            -    
-    ##    0.0000            - ***
+    ##    0.1729      -0.0290    
+    ##    0.5338       0.0160    
+    ##    0.0015       0.2687  **
+    ##    0.1216      -0.1486    
+    ##    0.7471      -0.0443    
+    ##    0.6326      -0.0715    
+    ##    0.0343       0.1838   *
+    ##    0.0024       0.4910  **
+    ##    0.7716       0.0147    
+    ##    0.0000      -0.3273 ***
     ##    0.0004       0.2477 ***
     ##    0.8110       0.0193    
     ##    0.0018       0.1318  **
@@ -7924,7 +7939,7 @@ summary(sem_les_epi)
     ##    0.2813       0.1482    
     ##    0.1164       0.1268    
     ##    0.4229       0.1061    
-    ##    0.8662       -0.007    
+    ##    0.8662      -0.0070    
     ##    0.1657       0.0669    
     ##    0.4613      -0.0157    
     ## 
@@ -7933,14 +7948,14 @@ summary(sem_les_epi)
     ## ---
     ## Individual R-squared:
     ## 
-    ##        Response method Marginal Conditional
-    ##        Epifauna   none     0.24        0.80
-    ##    CanopyHeight   none     0.17        0.89
-    ##      DensityLog   none     0.08        0.94
-    ##    BladeAreaLog   none     0.60        0.72
-    ##     EpiphyteLog   none     0.18        0.86
-    ##    GrazingScars  delta     0.30        0.46
-    ##   LesionAreaLog   none     0.24        0.47
+    ##        Response      method Marginal Conditional
+    ##        Epifauna        none     0.24        0.80
+    ##    CanopyHeight        none     0.17        0.89
+    ##      DensityLog        none     0.08        0.94
+    ##    BladeAreaLog        none     0.60        0.72
+    ##     EpiphyteLog        none     0.18        0.86
+    ##    GrazingScars theoretical     0.33        0.51
+    ##   LesionAreaLog        none     0.24        0.47
 
 Passes global fit.
 
@@ -9336,21 +9351,23 @@ summary(sem_les_amp)
     ##   LesionAreaLog ~ BladeAreaLog + GrazingScars + EpiphyteLog + Ampithoid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  148.462   271.837
+    ##     AIC
+    ##  2560.678
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##      Ampithoid ~ TidalHeightBinary + ...      coef 540.1367     0.3778  0.5390 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 542.3982     0.8516  0.3565 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 542.4390     1.5162  0.2187 
-    ##      Ampithoid ~ TidalHeightBinary + ...      coef 540.1367     0.3778  0.5390 
-    ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000    -0.0753  0.9400 
+    ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000    -0.0744  0.9407 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 6.462 with P-value = 0.596 and on 8 degrees of freedom
+    ## Chi-Squared = 3938.194 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 6.461 with P-value = 0.596 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -9403,7 +9420,7 @@ summary(sem_les_amp)
     ##    ~~DensityLog       ~~CanopyHeight  -0.0157         -  42.0000    -0.0978
     ##   P.Value Std.Estimate    
     ##    0.0108      -0.2509   *
-    ##    0.0133        0.509   *
+    ##    0.0133       0.5090   *
     ##    0.3912      -0.1211    
     ##    0.9909       0.0022    
     ##    0.0030      -0.1934  **
@@ -9428,14 +9445,14 @@ summary(sem_les_amp)
     ##    0.0059      -0.3936  **
     ##    0.1791      -0.0285    
     ##    0.5437      -0.0185    
-    ##    0.0010            -  **
-    ##    0.4440            -    
-    ##    0.8647            -    
-    ##    0.8829            -    
-    ##    0.0214            -   *
-    ##    0.0005            - ***
-    ##    0.7120            -    
-    ##    0.0000            - ***
+    ##    0.0010       0.2820  **
+    ##    0.4440      -0.0938    
+    ##    0.8647      -0.0264    
+    ##    0.8829      -0.0211    
+    ##    0.0214       0.2035   *
+    ##    0.0005       0.4840 ***
+    ##    0.7120       0.0188    
+    ##    0.0000      -0.3370 ***
     ##    0.0003       0.2558 ***
     ##    0.0079       0.1138  **
     ##    0.5989       0.0436    
@@ -9453,14 +9470,14 @@ summary(sem_les_amp)
     ## ---
     ## Individual R-squared:
     ## 
-    ##        Response method Marginal Conditional
-    ##       Ampithoid   none     0.28        0.96
-    ##    CanopyHeight   none     0.17        0.89
-    ##      DensityLog   none     0.08        0.94
-    ##    BladeAreaLog   none     0.65        0.72
-    ##     EpiphyteLog   none     0.17        0.87
-    ##    GrazingScars  delta     0.28        0.41
-    ##   LesionAreaLog   none     0.14        0.51
+    ##        Response      method Marginal Conditional
+    ##       Ampithoid        none     0.28        0.96
+    ##    CanopyHeight        none     0.17        0.89
+    ##      DensityLog        none     0.08        0.94
+    ##    BladeAreaLog        none     0.65        0.72
+    ##     EpiphyteLog        none     0.17        0.87
+    ##    GrazingScars theoretical     0.32        0.47
+    ##   LesionAreaLog        none     0.14        0.51
 
 Passes global fit.
 
@@ -10857,21 +10874,23 @@ summary(sem_les_lac)
     ##   LesionAreaLog ~ BladeAreaLog + GrazingScars + EpiphyteLog + Lacuna + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  148.654   272.029
+    ##     AIC
+    ##  2613.172
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##         Lacuna ~ TidalHeightBinary + ...      coef 540.6983     0.3740  0.5411 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 542.3982     0.8516  0.3565 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 542.4390     1.5162  0.2187 
-    ##         Lacuna ~ TidalHeightBinary + ...      coef 540.6983     0.3740  0.5411 
-    ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000    -0.1880  0.8508 
+    ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000    -0.1911  0.8485 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 6.654 with P-value = 0.574 and on 8 degrees of freedom
+    ## Chi-Squared = 2581.187 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 6.66 with P-value = 0.574 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -10924,7 +10943,7 @@ summary(sem_les_lac)
     ##    ~~DensityLog       ~~CanopyHeight  -0.0157         -  42.0000    -0.0978
     ##   P.Value Std.Estimate    
     ##    0.1558       0.2016    
-    ##    0.9065        0.026    
+    ##    0.9065       0.0260    
     ##    0.9495       0.0119    
     ##    0.7722       0.0756    
     ##    0.0938      -0.1762    
@@ -10946,26 +10965,26 @@ summary(sem_les_lac)
     ##    0.0964      -0.1207    
     ##    0.0985      -0.1572    
     ##    0.0389       0.1174   *
-    ##    0.0005       -0.474 ***
+    ##    0.0005      -0.4740 ***
     ##    0.1739      -0.0289    
     ##    0.8049       0.0065    
-    ##    0.0008            - ***
-    ##    0.0193            -   *
-    ##    0.8863            -    
-    ##    0.9149            -    
-    ##    0.0272            -   *
-    ##    0.0002            - ***
-    ##    0.7114            -    
-    ##    0.0000            - ***
+    ##    0.0008       0.2847 ***
+    ##    0.0193       0.2408   *
+    ##    0.8863      -0.0199    
+    ##    0.9149       0.0132    
+    ##    0.0272       0.1793   *
+    ##    0.0002       0.4091 ***
+    ##    0.7114       0.0189    
+    ##    0.0000      -0.2607 ***
     ##    0.0003       0.2536 ***
     ##    0.0139       0.1055   *
     ##    0.4233       0.0654    
     ##    0.0030       0.2596  **
-    ##    0.1296        0.153    
-    ##    0.1468       -0.185    
+    ##    0.1296       0.1530    
+    ##    0.1468      -0.1850    
     ##    0.1860      -0.1071    
     ##    0.1932       0.2245    
-    ##    0.8676       -0.007    
+    ##    0.8676      -0.0070    
     ##    0.2632       0.0551    
     ##    0.4613      -0.0157    
     ## 
@@ -10974,14 +10993,14 @@ summary(sem_les_lac)
     ## ---
     ## Individual R-squared:
     ## 
-    ##        Response method Marginal Conditional
-    ##          Lacuna   none     0.05        0.81
-    ##    CanopyHeight   none     0.17        0.89
-    ##      DensityLog   none     0.08        0.94
-    ##    BladeAreaLog   none     0.62        0.71
-    ##     EpiphyteLog   none     0.15        0.86
-    ##    GrazingScars  delta     0.28        0.38
-    ##   LesionAreaLog   none     0.20        0.57
+    ##        Response      method Marginal Conditional
+    ##          Lacuna        none     0.05        0.81
+    ##    CanopyHeight        none     0.17        0.89
+    ##      DensityLog        none     0.08        0.94
+    ##    BladeAreaLog        none     0.62        0.71
+    ##     EpiphyteLog        none     0.15        0.86
+    ##    GrazingScars theoretical     0.32        0.43
+    ##   LesionAreaLog        none     0.20        0.57
 
 Passes global fit.
 
@@ -12374,21 +12393,23 @@ summary(sem_les_ido)
     ##   LesionAreaLog ~ BladeAreaLog + GrazingScars + EpiphyteLog + Idoteid + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  150.495   273.87
+    ##     AIC
+    ##  2573.987
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##        Idoteid ~ TidalHeightBinary + ...      coef 540.1107     1.6246  0.2030 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 542.3982     0.8516  0.3565 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 542.4390     1.5162  0.2187 
-    ##        Idoteid ~ TidalHeightBinary + ...      coef 540.1107     1.6246  0.2030 
     ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000     0.1216  0.9032 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 8.495 with P-value = 0.387 and on 8 degrees of freedom
+    ## Chi-Squared = 3806.002 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 8.495 with P-value = 0.387 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -12440,7 +12461,7 @@ summary(sem_les_ido)
     ##   LesionAreaLog           YearBinary   0.0454    0.0685 388.5011     0.4326
     ##    ~~DensityLog       ~~CanopyHeight  -0.0157         -  42.0000    -0.0978
     ##   P.Value Std.Estimate    
-    ##    0.9935        0.001    
+    ##    0.9935       0.0010    
     ##    0.3296      -0.1873    
     ##    0.1302       0.3014    
     ##    0.3481       0.2458    
@@ -12466,23 +12487,23 @@ summary(sem_les_ido)
     ##    0.0074      -0.4066  **
     ##    0.1939      -0.0277    
     ##    0.4284       0.0204    
-    ##    0.0016            -  **
-    ##    0.1218            -    
-    ##    0.3515            -    
-    ##    0.6552            -    
-    ##    0.0042            -  **
-    ##    0.0013            -  **
-    ##    0.7968            -    
-    ##    0.0000            - ***
+    ##    0.0016       0.2682  **
+    ##    0.1218      -0.1385    
+    ##    0.3515       0.1216    
+    ##    0.6552       0.0664    
+    ##    0.0042       0.2374  **
+    ##    0.0013       0.4927  **
+    ##    0.7968       0.0131    
+    ##    0.0000      -0.3059 ***
     ##    0.0003       0.2516 ***
     ##    0.0059       0.1178  **
-    ##    0.5442         0.05    
-    ##    0.0089         0.26  **
+    ##    0.5442       0.0500    
+    ##    0.0089       0.2600  **
     ##    0.6689       0.0503    
-    ##    0.1069       -0.237    
+    ##    0.1069      -0.2370    
     ##    0.0974      -0.1594    
     ##    0.0245       0.5098   *
-    ##    0.9624       -0.002    
+    ##    0.9624      -0.0020    
     ##    0.5111       0.0318    
     ##    0.4613      -0.0157    
     ## 
@@ -12491,14 +12512,14 @@ summary(sem_les_ido)
     ## ---
     ## Individual R-squared:
     ## 
-    ##        Response method Marginal Conditional
-    ##         Idoteid   none     0.14        0.84
-    ##    CanopyHeight   none     0.17        0.89
-    ##      DensityLog   none     0.08        0.94
-    ##    BladeAreaLog   none     0.60        0.72
-    ##     EpiphyteLog   none     0.15        0.85
-    ##    GrazingScars  delta     0.33        0.50
-    ##   LesionAreaLog   none     0.17        0.72
+    ##        Response      method Marginal Conditional
+    ##         Idoteid        none     0.14        0.84
+    ##    CanopyHeight        none     0.17        0.89
+    ##      DensityLog        none     0.08        0.94
+    ##    BladeAreaLog        none     0.60        0.72
+    ##     EpiphyteLog        none     0.15        0.85
+    ##    GrazingScars theoretical     0.36        0.56
+    ##   LesionAreaLog        none     0.17        0.72
 
 Passes global fit.
 
@@ -13893,21 +13914,23 @@ summary(sem_les_rich)
     ##   LesionAreaLog ~ BladeAreaLog + GrazingScars + EpiphyteLog + Richness + CanopyHeight + DensityLog + TempAnomWarm_June + MonthlyMeanTemp_June + TidalHeightBinary + YearBinary
     ##   DensityLog ~~ CanopyHeight
     ## 
-    ##     AIC      BIC
-    ##  149.368   272.743
+    ##     AIC
+    ##  2789.435
     ## 
     ## ---
     ## Tests of directed separation:
     ## 
     ##                           Independ.Claim Test.Type       DF Crit.Value P.Value 
+    ##       Richness ~ TidalHeightBinary + ...      coef 540.3917     0.9090  0.3408 
     ##   CanopyHeight ~ TidalHeightBinary + ...      coef 542.3982     0.8516  0.3565 
     ##     DensityLog ~ TidalHeightBinary + ...      coef 542.4390     1.5162  0.2187 
-    ##       Richness ~ TidalHeightBinary + ...      coef 540.3917     0.9090  0.3408 
-    ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000     0.0688  0.9451 
+    ##         GrazingScars ~ EpiphyteLog + ...      coef 572.0000     0.0691  0.9449 
     ## 
+    ## --
     ## Global goodness-of-fit:
     ## 
-    ##   Fisher's C = 7.368 with P-value = 0.497 and on 8 degrees of freedom
+    ## Chi-Squared = 187.786 with P-value = 0 and on 4 degrees of freedom
+    ## Fisher's C = 7.369 with P-value = 0.497 and on 8 degrees of freedom
     ## 
     ## ---
     ## Coefficients:
@@ -13971,36 +13994,36 @@ summary(sem_les_rich)
     ##    0.2391       0.2331    
     ##    0.2996      -0.0563    
     ##    0.3353       0.0422    
-    ##    0.0000         0.61 ***
+    ##    0.0000       0.6100 ***
     ##    0.0537      -0.1759    
     ##    0.0722       0.0891    
     ##    0.0760      -0.1369    
     ##    0.0000      -0.2774 ***
     ##    0.0027       0.0891  **
-    ##    0.0022       -0.108  **
+    ##    0.0022      -0.1080  **
     ##    0.1746       0.0546    
     ##    0.0464      -0.1437   *
     ##    0.0431      -0.1837   *
-    ##    0.0307        0.122   *
+    ##    0.0307       0.1220   *
     ##    0.0008      -0.4575 ***
     ##    0.1496      -0.0307    
     ##    0.5183       0.0165    
-    ##    0.0015            -  **
-    ##    0.2483            -    
-    ##    0.7029            -    
-    ##    0.9110            -    
-    ##    0.0671            -    
-    ##    0.0009            - ***
-    ##    0.7527            -    
-    ##    0.0000            - ***
+    ##    0.0015       0.2694  **
+    ##    0.2483      -0.0919    
+    ##    0.7029       0.0465    
+    ##    0.9110       0.0158    
+    ##    0.0671       0.1752    
+    ##    0.0009       0.4931 ***
+    ##    0.7527       0.0160    
+    ##    0.0000      -0.3157 ***
     ##    0.0007       0.2408 ***
     ##    0.0062       0.1175  **
     ##    0.6619       0.0362    
     ##    0.0910       0.1192    
     ##    0.1900       0.1504    
     ##    0.6438      -0.0665    
-    ##    0.7442        0.028    
-    ##    0.2355        0.186    
+    ##    0.7442       0.0280    
+    ##    0.2355       0.1860    
     ##    0.8232      -0.0095    
     ##    0.5028       0.0329    
     ##    0.4613      -0.0157    
@@ -14010,14 +14033,14 @@ summary(sem_les_rich)
     ## ---
     ## Individual R-squared:
     ## 
-    ##        Response method Marginal Conditional
-    ##        Richness   none     0.31        0.31
-    ##    CanopyHeight   none     0.17        0.89
-    ##      DensityLog   none     0.08        0.94
-    ##    BladeAreaLog   none     0.59        0.71
-    ##     EpiphyteLog   none     0.16        0.86
-    ##    GrazingScars  delta     0.31        0.47
-    ##   LesionAreaLog   none     0.14        0.48
+    ##        Response      method Marginal Conditional
+    ##        Richness        none     0.31        0.31
+    ##    CanopyHeight        none     0.17        0.89
+    ##      DensityLog        none     0.08        0.94
+    ##    BladeAreaLog        none     0.59        0.71
+    ##     EpiphyteLog        none     0.16        0.86
+    ##    GrazingScars theoretical     0.35        0.52
+    ##   LesionAreaLog        none     0.14        0.48
 
 Passes global fit.
 
