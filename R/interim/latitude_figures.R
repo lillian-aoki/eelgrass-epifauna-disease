@@ -7,9 +7,9 @@
 
 library(tidyverse)
 library(patchwork)
-sem_dat <- read_csv("data/epiphyte_SEM_data_all_large.csv")
-epi_dat <- read_csv("data/epifauna_for_region_specific_models.csv")
-all_dat <- read_csv("data/epifauna_for_region_specific_models_no_epiphyte.csv")
+# sem_dat <- read_csv("data/epiphyte_SEM_data_all_large.csv")
+# epi_dat <- read_csv("data/epifauna_for_region_specific_models.csv")
+# all_dat <- read_csv("data/epifauna_for_region_specific_models_no_epiphyte.csv")
 
 region_order <- c("AK", "BC", "WA", "OR", "BB", "SD")
 
@@ -20,24 +20,30 @@ site_dat$Region <- ordered(site_dat$Region, levels=region_order)
 # epifauna distributions ####
 amp_plot <- ggplot(site_dat, aes(x=Latitude, y=Ampithoid_large, color=fYear))+
   geom_point(size=1.5, alpha=0.75)+
-  xlab("")+
-  ylab("Log Ampithoid \nabundance")+
+  # xlab("")+
+  xlab("Latitude (ºN)")+
+  ylab("Log ampithoid amphipods \n(abundance per g macrophytes)")+
   scale_y_continuous(limits=c(-2, 1))+
-  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
+  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60))+
+  # scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
   scale_color_manual(values=c('#CCBB44', '#66CCEE', '#AA3377'))+
+  # scale_color_viridis_d()+
   # scale_x_reverse(breaks = c(60, 55, 50, 45, 40, 35, 30))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.spacing = unit(0, "pt"),legend.title = element_blank(),
         plot.margin = unit(c(0,0,0,0), "pt"))
 amp_plot
+
 lac_plot <- ggplot(site_dat, aes(x=Latitude, y=Lacuna_large, color=fYear))+geom_point(size=1.5, alpha=0.75)+
   xlab("")+
-  ylab("Log Lacuna \nabundance")+
-  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
+  ylab(expression(atop(paste("Log ", italic("Lacuna"), " snails"), "(abundance per g macrophytes)")))+
+  # scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
+  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60))+
   scale_y_continuous(limits=c(-2, 1))+
   scale_color_manual(values=c('#CCBB44', '#66CCEE', '#AA3377'))+
-  theme_bw(base_size = 12)+
+  # scale_color_viridis_d()+
+  theme_bw(base_size = 11)+
   theme(panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.spacing = unit(0, "pt"),legend.title = element_blank(),
         plot.margin = unit(c(0,0,0,0), "pt"))
@@ -49,22 +55,26 @@ ido_plot <- ggplot(site_dat, aes(x=Latitude, y=Idoteid_large, color=fYear))+geom
            y=0.4, color = "grey30", size = 2.5,
            label = c("San\nDiego", "Bodega\nBay", "Oregon", "Washington","British\nColumbia", "Alaska"),
            angle = 45)+
-  ylab("Log Idoteid \nabundance")+
-  xlab("Latitude (ºN)")+
+  ylab("Log idoteid isopods \n(abundance per g marcophytes)")+
+  xlab("")+
+  # xlab("Latitude (ºN)")+
   scale_y_continuous(limits=c(-2, 1))+
-  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
+  # scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60), trans = "reverse")+
+  scale_x_continuous(breaks = c(30,35,40, 45, 50, 55, 60))+
+  # scale_color_viridis_d()+
   scale_color_manual(values=c('#CCBB44', '#66CCEE', '#AA3377'))+
   # scale_color_manual(values=c('#4477AA', '#EE6677', '#228833', '#CCBB44', '#66CCEE', '#AA3377'))+
   # scale_color_manual(values=c('#77AADD', '#EE8866', '#EEDD88', '#FFAABB', '#99DDFF', '#44BB99'))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.spacing = unit(0, "pt"), legend.title = element_blank(),
         plot.margin = unit(c(0,0,0,0), "pt"))
 
 ido_plot
 
-lac_plot / amp_plot / ido_plot / guide_area() + plot_layout(guides="collect", heights = c(1,1,1,0.2))
-ggsave("output/taxa_latitude_2.jpg", width = 4, height =6 )
+lac_plot / ido_plot / amp_plot / guide_area() + plot_layout(guides="collect", heights = c(1,1,1,0.1))
+ggsave("output/taxa_latitude_2_colors.jpg", width = 4, height =8.25 )
+ggsave("output/taxa_latitude_2.jpg", width = 4, height =8.25 )
 
 # flip axes of epifauna dist ####
 amp_plot2 <- ggplot(site_dat, aes(y=Latitude, x=Ampithoid_large, color=fYear))+

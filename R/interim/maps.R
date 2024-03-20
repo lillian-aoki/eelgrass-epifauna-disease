@@ -1,12 +1,12 @@
 library(tidyverse)
 library(sf)
 library(rnaturalearth)
-library(rnaturalearthdata)
-library(rgeos)
-# library(rnaturalearthhires)
-library(ggspatial)
-library(patchwork)
-library(ggrepel)
+# library(rnaturalearthdata)
+# library(rgeos)
+# # library(rnaturalearthhires)
+# library(ggspatial)
+# library(patchwork)
+# library(ggrepel)
 
 sites <- read_csv("data/epifauna_site_for_plotting.csv")
 sites <- na.omit(sites)
@@ -37,7 +37,7 @@ mapFull +
                    x = c(-136, -133, -128, -127, -127, -120.5), 
                    y = c(55, 51, 48, 44, 38, 32.5),
                   fontface = "italic",
-                   label = c("Alaska", "British Colulmbia", "Washington", "Oregon", "Bodega Bay", "San Diego"))
+                   label = c("Alaska", "British Columbia", "Washington", "Oregon", "Bodega Bay", "San Diego"))
 
 ggsave("output/map_study_sites.jpg", width = 4, height = 6)
 

@@ -56,11 +56,12 @@ mosaic <- ggplot(sem_dat)+
   # scale_color_manual(values=c('#4477AA', '#EE6677', '#228833', '#CCBB44', '#66CCEE', '#AA3377'))+
   # facet_wrap(~fYear)+
   theme_bw(base_size=14)+
+  # scale_fill_viridis_d(labels=c("Healthy", "Diseased"),begin = 0.6, end = 0)+
   scale_fill_manual(labels=c("Healthy", "Diseased"), values = c('#228833', '#CCBB44'))+
   # scale_x_continuous(labels=c("Absent", "Present"))+
   xlab("Grazing scars")+
   ylab("Wasting disease infection")+
-  labs(tag = "(a)   ")+
+  # labs(tag = "(a)   ")+
   theme(legend.title = element_blank(),
         panel.grid = element_blank(),
         # plot.margin = unit(0, "pt"),
@@ -69,5 +70,5 @@ mosaic <- ggplot(sem_dat)+
 # mosaic + guide_area() + plot_layout(guides= "collect", widths = c(1,0.5))
 mosaic / guide_area() + plot_layout(guides= "collect", heights = c(1, 0.1))
 
-ggsave("output/grazing_scar_mosaic.jpg", width = 4, height = 3)
+ggsave("output/grazing_scar_mosaic_colors.jpg", width = 4, height = 3.5)
 
